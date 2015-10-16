@@ -1,0 +1,33 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- jQueryとjQueryUIをCDNで読み込む。（ダウンロードしなくていい。） -->
+  <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>  
+  <!-- cssも外部から読み込んでる。 -->
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+  <!-- スクリプトはこれだけで済む。簡単。 -->
+  <script>
+  $(function() {
+    $( "#tabhoge" ).tabs();
+  });
+  </script>
+
+</head>
+<body>
+
+  <div id="tabhoge" style="width: 450px;">
+    <ul>
+      <li><a href="#t-1">タブ１</a></li>
+      <li><a href="#t-2">タブ２</a></li>
+      <li><a href="#t-3">タブ３</a></li>
+    </ul>
+
+    <div id="t-1">コンテンツ１</div>
+    <div id="t-2">コンテンツ２</div>
+    <div id="t-3">コンテンツ３</div>
+  </div>
+
+</body>
+</html>

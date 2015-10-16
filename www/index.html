@@ -1,2 +1,53 @@
-<h1>こんにちは</h1>
-<h2>はじめてのherokuです。</h2>
+<!doctype html>
+<html>
+
+<!-- ここからヘッダー情報 -->
+<head>
+
+	<!-- 文字コードの指定 -->
+	<meta http-equiv = "Content-Type" content = "text/html; charset = UTF-8">
+
+	<!-- ページタイトルの指定 -->
+	<title>人狼</title>
+
+	<!-- 検索巡回拒否の指定 -->
+	<meta name = "robots" content = "NONE">
+	<meta name = "robots" content = "noarchive">
+
+	<!-- キャッシュの禁止 -->
+	<meta name = "robots" content = "noarchive">
+
+	<!-- 画面サイズの調整 -->
+	<meta name = "viewport" content = "width = 1024">
+
+	<!-- スタイルシートの読み込み -->
+	<!-- <link href="index.css" rel="stylesheet" type="text/css"> -->
+
+	<!-- スタイルスクリプトの読み込み -->
+	<!-- <script type="text/javascript" src="Style.js" charset="Shift_JIS"></script> -->
+
+</head>
+<!-- ここまでヘッダー情報 -->
+
+<body>
+
+	<ul id="tab">
+		<li>全体</li>
+		<li>人狼</li>
+	</ul>
+
+	<span id="htmlbox"></span>
+
+	<hr>
+
+	<ul id="yours">
+		<li>your name</li>
+		<li>your role</li>
+	</ul>
+
+	<textarea id="kaigi" name="chat" rows="5" cols="20"></textarea>
+	<br>
+	<input type="button" value="送信" onclick='send();'>
+
+</body>
+</html>
