@@ -116,9 +116,19 @@ io.on('connection', function (socket) {
                     player[arr]['death'] = 0;
                     player[arr]['vote'] = -1;
                 }
+                
+                sendflag = false;
                 // プレイヤー情報を送る
                 io.emit('player', player);
                 break;
+        }
+        var result = msg.match(/kick (\d+)/);
+        if (result){
+            player.splice( result[1] , 1 ) ;
+            sendflag = false;
+            // プレイヤー情報を送る
+            io.emit('player', player);
+            
         }
        
         // 名前の登録
