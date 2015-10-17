@@ -56,6 +56,32 @@
 	background-color: rgba(0, 0, 0, 0) !important;
 }
 
+#t-1 {
+	position:relative;
+	overflow-x: hidden;
+    overflow-y: scroll;
+    height: 250px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 0px;
+    padding-left: 0px;
+
+}
+
+#t-1 table {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	border-collapse:collapse;
+}
+
+#t-1 table td {
+	word-break: break-all;
+}
+
+#t-1 table tr {
+	border-bottom:1px dashed #000;
+}
 </style>
 
 <script>
@@ -71,8 +97,13 @@ $(document).ready(function(){
 	});
 
  	socket.on('kaigi', function(msg){
-		 console.log(msg);
+		 var userName = "ゆうと";
+		 msg = msg.replace( /\n/g , "<br>" );
+		 msg = msg.replace( / /g , "&nbsp;" );
+
+		 $('#t-1 table').append($('<tr>').append('<td>'+userName+'<td>'+msg));
 	 });
+	 
 });
 
 </script>
@@ -89,11 +120,10 @@ $(document).ready(function(){
 		<li><a href="#t-2">夜</a></li>
 	</ul>
 
-	<div id="t-1">コンテンツ１</div>
+	<div id="t-1"><table></table></div>
 	<div id="t-2">コンテンツ２</div>
 </div>
 
-	<span id="htmlbox"></span>
 <br><br>
 <table id="name-and-role">
 <tr>
