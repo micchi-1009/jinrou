@@ -18,7 +18,7 @@ io.on('connection', function(socket) {
 
     socket.on('kaigi', function(msg) {
        console.log(msg);
-       io.emit('kaigi', msg+"Yuto");
+       io.emit('kaigi', msg);
     });
 
 	/*

@@ -57,7 +57,7 @@
 }
 
 #t-1 {
-	position:relative;
+/*	position:relative;*/
 	overflow-x: hidden;
     overflow-y: scroll;
     height: 250px;
@@ -69,8 +69,9 @@
 }
 
 #t-1 table {
-	position: absolute;
-	bottom: 0;
+	/*position: absolute;*/
+/*    top: 245px;
+    position: absolute;*/
 	width: 100%;
 	border-collapse:collapse;
 }
@@ -102,6 +103,7 @@ $(document).ready(function(){
 		 msg = msg.replace( / /g , "&nbsp;" );
 
 		 $('#t-1 table').append($('<tr>').append('<td>'+userName+'<td>'+msg));
+		 $(".overview").scrollTop($("#t-1")[0].scrollHeight);
 	 });
 	 
 });
@@ -120,7 +122,7 @@ $(document).ready(function(){
 		<li><a href="#t-2">夜</a></li>
 	</ul>
 
-	<div id="t-1"><table></table></div>
+	<div id="t-1" class="overview"><table></table></div>
 	<div id="t-2">コンテンツ２</div>
 </div>
 
