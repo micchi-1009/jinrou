@@ -139,6 +139,14 @@ $(document).ready(function(){
 		 $('#t-1 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
 		 $(".overview").scrollTop($("#t-1")[0].scrollHeight);
 	 });
+	 
+	 socket.on('player',function(data){
+		
+		$('#player table').empty();
+		for (var arr in data){
+		 $('#player table').append($('<tr>').append('<td>'+data[arr]['name']+'<td>'+data[arr]['live']+'<td>'+data[arr]['role']));
+		}
+	 });
 	
 	
 	
@@ -186,6 +194,8 @@ $(document).ready(function(){
 
 	<textarea id="kaigi" style="height: 100px; width: 450px;"></textarea>
 	<input id="sendButton" type="button" value="送信">
+
+<div id="player" class="overview"><table></table></div>
 
 <!-- コントローラダイアログ -->
 <div id="control" class="dialog">
