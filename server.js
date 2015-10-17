@@ -19,25 +19,28 @@ io.on('connection', function(socket) {
     var userName;
 
     console.log("新しい接続がありました。" + socket.id);
-
-    player.push({ id: socket.id, role: "wolf", live: true, death: 0, vote: -1 });
-
+    
     socket.on('kaigi', function(msg) {
        console.log(msg);
+       
+       for (var arr in player) {
+           if( player[arr]['id'] == socket.id ) {
+               userName = player[arr]['name'];
+           }
+       }
+       
        io.emit('kaigi', {msg:msg, userName:userName});
 
        console.log(player);
     });
 
     socket.on('userName', function(msg) {
-        console.log(player);
-        for (var arr in player) {
-           if( player[arr]['id'] == socket.id ) {
-               userName = player[arr]['name'] = msg;
-               io.emit('kaigi',{msg:userName+"さんがログインしました。", userName:"GM"})
-           }
-        }
+        player.push({ id: socket.id, name: msg, role: "wolf", live: true, death: 0, vote: -1 });
+        io.emit('kaigi',{msg:msg+"さんがログインしました。", userName:"GM"});
+
     });
+    
+    
 
 	/*
     
