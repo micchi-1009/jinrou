@@ -93,14 +93,17 @@ io.on('connection', function (socket) {
     // チャットをmsgに保存
     socket.on('kaigi', function (msg) {
        
+       var sendflag = true;
+       console.log(socket.id+': '+msg);
+       
         // なんちゃってGMコマンド
-        
         switch (msg) {
 
             case "/start":
                 gamestart();
                 console.log("game start!");
                 
+                sendflag = false;
                 // プレイヤー情報を送る
                 io.emit('player', player);
                 break;
@@ -124,10 +127,11 @@ io.on('connection', function (socket) {
                 userName = player[arr]['name'];
             }
         }
-   
-        // チャット送信   
-        io.emit('kaigi', { msg: msg, userName: userName });
-
+        
+        // チャット送信
+        if ( sendflag ) { 
+            io.emit('kaigi', { msg: msg, userName: userName });
+        }
     });
 
     // GMログインメッセージ
