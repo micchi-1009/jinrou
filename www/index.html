@@ -48,7 +48,7 @@
 #name-and-role td {
 	padding: 0px;
 	width: 25%;
-    background-color: rgb(249, 155, 92);
+    background-color: rgb(199, 206, 230);
 	text-align: center;		/* 要素の位置 */
 }
 
@@ -83,6 +83,16 @@
 #t-1 table tr {
 	border-bottom:1px dashed #000;
 }
+
+.dialog {
+		display: none;
+}
+
+#name-error {
+	color: red;
+	display: none;
+}
+
 </style>
 
 <script>
@@ -92,19 +102,57 @@ var socket = io();
 $(document).ready(function(){
 
 	$( "#tabhoge" ).tabs();
+	
+	$('#control').dialog({
+        autoOpen: true,
+		resizable: false,
+		closeOnEscape: false,
+        height: 170,
+        width: 460,
+		open:function(event, ui){ $(".ui-dialog-titlebar-close").hide();}
+    });
 
 	$('#sendButton').on('click',function() {
 		socket.emit('kaigi', $("#kaigi").val());
+		$('#kaigi').val("");
 	});
 
- 	socket.on('kaigi', function(msg){
-		 var userName = "ゆうと";
-		 msg = msg.replace( /\n/g , "<br>" );
-		 msg = msg.replace( / /g , "&nbsp;" );
+	$('#named').on('click', function() {
+		
+		var user=$('#namebox').val();
 
-		 $('#t-1 table').append($('<tr>').append('<td>'+userName+'<td>'+msg));
+		if ( (user.length>0 && user.length<9) && (user!="GM") ) {
+			socket.emit('userName', user);
+			$('#control').dialog('close');
+			$('#yourname').text(user);
+		} else {
+			$('#name-error').css("display","block");
+			$('#plane-msg').css("display","none");
+		}
+
+	});
+
+ 	socket.on('kaigi', function(data){
+		 data.msg = data.msg.replace( /\n/g , "<br>" );
+		 data.msg = data.msg.replace( / /g , "&nbsp;" );
+
+		 $('#t-1 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
 		 $(".overview").scrollTop($("#t-1")[0].scrollHeight);
 	 });
+	
+	
+	
+	  $('#kaigi').keydown(function(e){
+    if(event.ctrlKey){
+      if(e.keyCode === 13){
+		socket.emit('kaigi', $("#kaigi").val());
+		$('#kaigi').val("");
+         return false;
+      }
+    }
+  });
+	
+	//$('control').dialog('open');
 	 
 });
 
@@ -129,15 +177,23 @@ $(document).ready(function(){
 <br><br>
 <table id="name-and-role">
 <tr>
-<td>Your Name</td>
+<td id="yourname">Your Name</td>
 <td class="no-color"></td>
 <td class="no-color"></td>
-<td>YourRole</td>
+<td id="yourrole">Your Role</td>
 </tr>
 </table>
 
 	<textarea id="kaigi" style="height: 100px; width: 450px;"></textarea>
 	<input id="sendButton" type="button" value="送信">
+
+<!-- コントローラダイアログ -->
+<div id="control" class="dialog">
+	<p id="name-error" >名前は、0文字以上8文字まででお願いします。</p>
+	<p id="plane-msg">名前を入力してください。</p>
+    名前：<input type="text" id="namebox">
+	<input type="button" value="OK" id="named">
+</div>
 
 </body>
 </html>

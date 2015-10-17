@@ -6,6 +6,8 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+var player = new Array();
+
 // wwwディレクトリを静的ファイルディレクトリとして登録
 app.use(express.static('www'));
 
@@ -14,11 +16,27 @@ server.listen(process.env.PORT||3000);
 
 io.on('connection', function(socket) {
 
-	console.log("新しい接続がありました。");
+    var userName;
+
+    console.log("新しい接続がありました。" + socket.id);
+
+    player.push({ id: socket.id, role: "wolf", live: true, death: 0, vote: -1 });
 
     socket.on('kaigi', function(msg) {
        console.log(msg);
-       io.emit('kaigi', msg);
+       io.emit('kaigi', {msg:msg, userName:userName});
+
+       console.log(player);
+    });
+
+    socket.on('userName', function(msg) {
+        console.log(player);
+        for (var arr in player) {
+           if( player[arr]['id'] == socket.id ) {
+               userName = player[arr]['name'] = msg;
+               io.emit('kaigi',{msg:userName+"さんがログインしました。", userName:"GM"})
+           }
+        }
     });
 
 	/*
