@@ -15,12 +15,15 @@ server.listen(process.env.PORT||3000);
 io.on('connection', function(socket) {
 
 	console.log("新しい接続がありました。");
-	
-	/*
-    // show chat message
-    socket.on('chat message', function(msg){
-        io.emit('chat message', people[socket.id] + ' : ' + msg);
+
+    socket.on('kaigi', function(msg) {
+       console.log(msg);
+       io.emit('kaigi', msg+"Yuto");
     });
+
+	/*
+    
+     io.emit('chat message', people[socket.id] + ' : ' + msg);
     // show user name
     socket.on('show username', function(username){
         // set username into people

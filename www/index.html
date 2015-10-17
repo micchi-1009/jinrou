@@ -62,10 +62,17 @@
 
 var socket = io();
 
-$(function() {
+$(document).ready(function(){
 
 	$( "#tabhoge" ).tabs();
 
+	$('#sendButton').on('click',function() {
+		socket.emit('kaigi', $("#kaigi").val());
+	});
+
+ 	socket.on('kaigi', function(msg){
+		 console.log(msg);
+	 });
 });
 
 </script>
@@ -97,8 +104,8 @@ $(function() {
 </tr>
 </table>
 
-	<textarea style="height: 100px; width: 450px;"></textarea>
-	<input type="button" value="送信" onclick='send();'>
+	<textarea id="kaigi" style="height: 100px; width: 450px;"></textarea>
+	<input id="sendButton" type="button" value="送信">
 
 </body>
 </html>
