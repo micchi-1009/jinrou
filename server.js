@@ -47,13 +47,29 @@ var match = {
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
 
+// シャッフル
+function shuffle(array) {
+    var n = array.length, t, i;
+
+    while (n) {
+        i = Math.floor(Math.random() * n--);
+        t = array[n];
+        array[n] = array[i];
+        array[i] = t;
+    }
+
+    return array;
+}
+
 function gamestart() {
     var memcount = player.length;
 
-    match[memcount];
+    var change = match[memcount];
+
+    shuffle(change);
 
     for (var i = 0; i < memcount; i++) {
-        player[i]['role'] = match[memcount][i];
+        player[i]['role'] = change[i];
     }
 
     console.log(match[memcount]);
@@ -71,14 +87,35 @@ io.on('connection', function (socket) {
 
     console.log("新しい接続がありました。" + socket.id);
     
+    // プレイヤー情報を送る
+    io.emit('player', player);
+    
     // チャットをmsgに保存
     socket.on('kaigi', function (msg) {
        
-        // 開始コマンド
-        if (msg == "/start") {
+        // なんちゃってGMコマンド
+        
+        switch (msg) {
 
-            gamestart();
-            console.log("game start!");
+            case "/start":
+                gamestart();
+                console.log("game start!");
+                
+                // プレイヤー情報を送る
+                io.emit('player', player);
+                break;
+
+            case "/stop":
+                turn = 0;
+                for (var arr in player) {
+                    player[arr]['role'] = role.none;
+                    player[arr]['live'] = true;
+                    player[arr]['death'] = 0;
+                    player[arr]['vote'] = -1;
+                }
+                // プレイヤー情報を送る
+                io.emit('player', player);
+                break;
         }
        
         // 名前の登録
@@ -88,18 +125,18 @@ io.on('connection', function (socket) {
             }
         }
    
-        // チャット送信    
+        // チャット送信   
         io.emit('kaigi', { msg: msg, userName: userName });
 
-        // プレイヤー情報を送る
-        io.emit('player', player);
     });
 
     // GMログインメッセージ
     socket.on('userName', function (msg) {
-        player.push({ id: socket.id, name: msg, role:role.none , live: true, death: 0, vote: -1 });
+        player.push({ id: socket.id, name: msg, role: role.none, live: true, death: 0, vote: -1 });
         io.emit('kaigi', { msg: msg + "さんがログインしました。", userName: "GM" });
 
+        // プレイヤー情報を送る
+        io.emit('player', player);
     });
 
 	/*
