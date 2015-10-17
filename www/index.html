@@ -26,27 +26,71 @@
 	<!-- スタイルスクリプトの読み込み -->
 	<!-- <script type="text/javascript" src="Style.js" charset="Shift_JIS"></script> -->
 
+<!-- jQueryとjQueryUIをCDNで読み込む。（ダウンロードしなくていい。） -->
+  <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+  <script src="//code.jquery.com/ui/1.11.0/jquery-ui.js"></script>  
+  <!-- cssも外部から読み込んでる。 -->
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">
+
+<style>
+.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    padding-top: 1px;
+    padding-right: 15px;
+    padding-bottom: 1px;
+    padding-left: 15px;
+}
+
+#name-and-role {
+	width: 457px;
+}
+
+#name-and-role td {
+	padding: 0px;
+	width: 25%;
+    background-color: rgb(249, 155, 92);
+	text-align: center;		/* 要素の位置 */
+}
+
+.no-color {
+	background-color: rgba(0, 0, 0, 0) !important;
+}
+
+</style>
+
+  <script>
+  $(function() {
+    $( "#tabhoge" ).tabs();
+  });
+  </script>
+
 </head>
+
 <!-- ここまでヘッダー情報 -->
 
 <body>
-
-	<ul id="tab">
-		<li>全体</li>
-		<li>人狼</li>
+	
+<div id="tabhoge" style="width: 450px; height: 300px;">
+	<ul>
+		<li><a href="#t-1">昼</a></li>
+		<li><a href="#t-2">夜</a></li>
 	</ul>
+
+	<div id="t-1">コンテンツ１</div>
+	<div id="t-2">コンテンツ２</div>
+</div>
 
 	<span id="htmlbox"></span>
+<br><br>
+<table id="name-and-role">
+<tr>
+<td>Your Name</td>
+<td class="no-color"></td>
+<td class="no-color"></td>
+<td>YourRole</td>
+</tr>
+</table>
 
-	<hr>
-
-	<ul id="yours">
-		<li>your name</li>
-		<li>your role</li>
-	</ul>
-
-	<textarea id="kaigi" name="chat" rows="5" cols="20"></textarea>
-	<br>
+	<textarea style="height: 100px; width: 450px;"></textarea>
 	<input type="button" value="送信" onclick='send();'>
 
 </body>
