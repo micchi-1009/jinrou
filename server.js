@@ -6,16 +6,31 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+
+// 参加者コンストラクタ
+var entrant = function (id, name) {
+
+    this.socketId = id;  // socket.ioのID
+    this.userName = name;// ユーザ名
+    this.role = null;    // 役割
+    this.vote = null;    // 投票
+    this.lifeAndDeath = true;
+
+    return this;
+};
+
+
+
 var player = new Array();
 
 var turn = 0;
 
 
 // 連想配列のキーに変数を使えないので実数を入力した
-var actions = { 
-  1 : -1,  
-  2 : -1 ,
-  5 : -1  
+var actions = {
+    1: -1,
+    2: -1,
+    5: -1
 };
 
 
@@ -56,7 +71,7 @@ var match = {
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
 
-// シャッフル
+
 function shuffle(array) {
     var n = array.length, t, i;
 
@@ -101,9 +116,9 @@ io.on('connection', function (socket) {
     
     // チャットをmsgに保存
     socket.on('kaigi', function (msg) {
-       
-       var sendflag = true;
-       console.log(socket.id+': '+msg);
+
+        var sendflag = true;
+        console.log(socket.id + ': ' + msg);
        
         // なんちゃってGMコマンド
         switch (msg) {
@@ -128,31 +143,31 @@ io.on('connection', function (socket) {
                 // プレイヤー情報を送る 
                 io.emit('player', player);
                 break;
-                
+
             case "/debug":
                 console.log(actions);
                 sendflag = false;
                 // プレイヤー情報を送る
-                io.emit('player', player);   
-                break; 
+                io.emit('player', player);
+                break;
         }
         var result;
         
         // voteコマンド
         result = msg.match(/\/vote (\d+) (\d+)/);
-        if(result){
+        if (result) {
             player[result[1]]['vote'] = result[2];
-            
+
             sendflag = false;
         }
         
         // kickコマンド
         result = msg.match(/\/kick (\d+)/);
-        if (result){
+        if (result) {
             io.emit('kaigi', { msg: player[result[1]]['name'] + "さんがkickされました。", userName: "GM" });
-            
-            player.splice( result[1] , 1 ) ;
-            
+
+            player.splice(result[1], 1);
+
             sendflag = false;
             // プレイヤー情報を送る
             io.emit('player', player);
@@ -160,22 +175,22 @@ io.on('connection', function (socket) {
         
         // actionコマンド
         result = msg.match(/\/action (\w+) (\d+)/);
-        if(result){
-            switch(result[1]){
-            
+        if (result) {
+            switch (result[1]) {
+
                 case "wolf":
-                    actions[role.wolf]=result[2];
+                    actions[role.wolf] = result[2];
                     break;
-                    
+
                 case "fort":
-                    actions[role.fort]=result[2];
+                    actions[role.fort] = result[2];
                     break;
-                    
+
                 case "hunt":
-                    actions[role.hunt]=result[2];
+                    actions[role.hunt] = result[2];
                     break;
             }
-            
+
             sendflag = false;
         }
        
@@ -187,7 +202,7 @@ io.on('connection', function (socket) {
         }
         
         // チャット送信
-        if ( sendflag ) { 
+        if (sendflag) {
             io.emit('kaigi', { msg: msg, userName: userName });
         }
     });
@@ -201,29 +216,4 @@ io.on('connection', function (socket) {
         io.emit('player', player);
     });
 
-	/*
-    
-     io.emit('chat message', people[socket.id] + ' : ' + msg);
-    // show user name
-    socket.on('show username', function(username){
-        // set username into people
-        people[socket.id] = username;
-        // add all username in userlist
-        var userlist = [];
-        for(key in people){
-            userlist.push(people[key]);
-            console.log(userlist);
-        }
-        // send username to client
-        io.emit('show username', username); // show username in form header
-        io.emit('show userlist', userlist); // show userlist in main
-    });
-    // disconnect socket
-    socket.on('disconnect', function(){
-        console.log(people[socket.id] + ' has disconnected');
-        // remove nickname from people list
-        delete people[socket.id];
-    });
-	
-*/
 });
