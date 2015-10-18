@@ -10,6 +10,15 @@ var player = new Array();
 
 var turn = 0;
 
+
+// 連想配列のキーに変数を使えないので実数を入力した
+var actions = { 
+  1 : -1,  
+  2 : -1 ,
+  5 : -1  
+};
+
+
 var role = {
     none: -1,
     vill: 0,
@@ -121,17 +130,25 @@ io.on('connection', function (socket) {
                 break;
                 
             case "/debug":
-                console.log(player);
+                console.log(actions);
                 sendflag = false;
                 // プレイヤー情報を送る
                 io.emit('player', player);   
                 break; 
         }
+        var result;
+        
+        // voteコマンド
+        result = msg.match(/\/vote (\d+) (\d+)/);
+        if(result){
+            player[result[1]]['vote'] = result[2];
+            
+            sendflag = false;
+        }
         
         // kickコマンド
-        var result = msg.match(/kick (\d+)/);
+        result = msg.match(/\/kick (\d+)/);
         if (result){
-            
             io.emit('kaigi', { msg: player[result[1]]['name'] + "さんがkickされました。", userName: "GM" });
             
             player.splice( result[1] , 1 ) ;
@@ -139,7 +156,27 @@ io.on('connection', function (socket) {
             sendflag = false;
             // プレイヤー情報を送る
             io.emit('player', player);
+        }
+        
+        // actionコマンド
+        result = msg.match(/\/action (\w+) (\d+)/);
+        if(result){
+            switch(result[1]){
             
+                case "wolf":
+                    actions[role.wolf]=result[2];
+                    break;
+                    
+                case "fort":
+                    actions[role.fort]=result[2];
+                    break;
+                    
+                case "hunt":
+                    actions[role.hunt]=result[2];
+                    break;
+            }
+            
+            sendflag = false;
         }
        
         // 名前の登録

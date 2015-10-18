@@ -166,7 +166,7 @@ $(document).ready(function(){
 		
 		$('#player table').empty();
 		for (var arr in data){
-			$('#player table').append($('<tr>').append( '<td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+exchange[data[arr]['role']]));
+			$('#player table').append($('<tr>').append( '<td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
 		 	if ( socket.id == data[arr]['id'] ) {
 				mynumber = arr;
 				$('#yourrole').text(exchange[data[arr]['role']]);
