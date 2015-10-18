@@ -96,18 +96,18 @@
 	</style>
 
 	<script>
-		// roleの変換
+		
+// roleの変換
 var exchange = {
 	'-1': '無し',
-	0: '村人',
-	1: '人狼',
-	2: '占い師',
-	3: '霊能者',
-	4: '狂人',
-	5: '狩人',
-	6: '共有者',
-	7: '妖狐',
-		
+	'0': '村人',
+	'1': '人狼',
+	'2': '占い師',
+	'3': '霊能者',
+	'4': '狂人',
+	'5': '狩人',
+	'6': '共有者',
+	'7': '妖狐',	
 };
 
 var user;
@@ -127,17 +127,18 @@ $(document).ready(function(){
 		open:function(event, ui){ $(".ui-dialog-titlebar-close").hide();}
     });
 
-// 送信ボタンを押したときの処理
+	// 送信ボタンを押したときの処理
 	$('#sendButton').on('click',function() {
 		socket.emit('kaigi', $("#kaigi").val());
 		$('#kaigi').val("");
 	});
 
-// 名前決定ボタンを押したときの処理
+	// 名前決定ボタンを押したときの処理
 	$('#named').on('click', function() {
 		
 		user=$('#namebox').val();
-// 文字制限
+
+		// 文字制限
 		if ( (user.length>0 && user.length<9) && (user!="GM") ) {
 			socket.emit('userName', user);
 			$('#control').dialog('close');
@@ -149,7 +150,7 @@ $(document).ready(function(){
 
 	});
 
-// サーバーから送られてきたチャット内容の処理
+	// サーバーから送られてきたチャット内容の処理
  	socket.on('kaigi', function(data){
 		 data.msg = data.msg.replace( /\n/g , "<br>" );
 		 data.msg = data.msg.replace( / /g , "&nbsp;" );
@@ -161,26 +162,34 @@ $(document).ready(function(){
 	 // 名前、生死判定、役職のリスト
 	 socket.on('player',function(data){
 		
+		mynumber=-1;
+		
 		$('#player table').empty();
 		for (var arr in data){
 			$('#player table').append($('<tr>').append( '<td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+exchange[data[arr]['role']]));
 		 	if ( socket.id == data[arr]['id'] ) {
 				mynumber = arr;
 				$('#yourrole').text(exchange[data[arr]['role']]);
-		 }
+		 	}
+		}
+		if ( mynumber == -1){
+			// キックされた人用の処理	
+			$('#sendButton').hide();
+		} else {
+			$('#sendButton').show();		
 		}
 	 });
 	
 	
 	// ctrl+enterでの送信
-	  $('#kaigi').keydown(function(e){
-    if(event.ctrlKey){
-      if(e.keyCode === 13){
-		socket.emit('kaigi', $("#kaigi").val());
-		$('#kaigi').val("");
-         return false;
-      }
-    }
+	$('#kaigi').keydown(function(e){
+    	if(event.ctrlKey){
+      		if(e.keyCode === 13 && mynumber != -1){
+				socket.emit('kaigi', $("#kaigi").val());
+				$('#kaigi').val("");
+         		return false;
+      		}
+    	}
   });
 	
 	//$('control').dialog('open');

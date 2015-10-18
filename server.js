@@ -102,7 +102,6 @@ io.on('connection', function (socket) {
             case "/start":
                 gamestart();
                 console.log("game start!");
-                
                 sendflag = false;
                 // プレイヤー情報を送る
                 io.emit('player', player);
@@ -116,15 +115,27 @@ io.on('connection', function (socket) {
                     player[arr]['death'] = 0;
                     player[arr]['vote'] = -1;
                 }
-                
                 sendflag = false;
-                // プレイヤー情報を送る
+                // プレイヤー情報を送る 
                 io.emit('player', player);
                 break;
+                
+            case "/debug":
+                console.log(player);
+                sendflag = false;
+                // プレイヤー情報を送る
+                io.emit('player', player);   
+                break; 
         }
+        
+        // kickコマンド
         var result = msg.match(/kick (\d+)/);
         if (result){
+            
+            io.emit('kaigi', { msg: player[result[1]]['name'] + "さんがkickされました。", userName: "GM" });
+            
             player.splice( result[1] , 1 ) ;
+            
             sendflag = false;
             // プレイヤー情報を送る
             io.emit('player', player);
