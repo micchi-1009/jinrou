@@ -6,6 +6,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+var players = new Array();
 
 // 参加者コンストラクタ
 var entrant = function (id, name) {
@@ -16,8 +17,11 @@ var entrant = function (id, name) {
     this.vote = null;    // 投票
     this.lifeAndDeath = true;
 
-    return this;
 };
+
+players.push(new entrant(0,0));
+
+
 
 
 
