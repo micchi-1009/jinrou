@@ -20,6 +20,31 @@ var entrant = function (id, name) {
 
 };
 
+// 配列ランダムに混ぜる関数
+var shuffle = function (array) {
+    var n = array.length, t, i;
+
+    while (n) {
+        i = Math.floor(Math.random() * n--);
+        t = array[n];
+        array[n] = array[i];
+        array[i] = t;
+    }
+
+    return array;
+};
+
+/* -- -- */
+
+// wwwディレクトリを静的ファイルディレクトリとして登録
+app.use(express.static('www'));
+
+// サーバを開始
+server.listen(process.env.PORT || 3000);
+
+
+
+// よび
 players.push(new entrant(0,0));
 
 
@@ -76,20 +101,6 @@ var match = {
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
 
-
-function shuffle(array) {
-    var n = array.length, t, i;
-
-    while (n) {
-        i = Math.floor(Math.random() * n--);
-        t = array[n];
-        array[n] = array[i];
-        array[i] = t;
-    }
-
-    return array;
-}
-
 function gamestart() {
     var memcount = player.length;
 
@@ -103,12 +114,6 @@ function gamestart() {
 
     console.log(match[memcount]);
 };
-
-// wwwディレクトリを静的ファイルディレクトリとして登録
-app.use(express.static('www'));
-
-// サーバを開始
-server.listen(process.env.PORT || 3000);
 
 io.on('connection', function (socket) {
 
