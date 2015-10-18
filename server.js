@@ -1,6 +1,7 @@
-/**
-	server
-**/
+/*
+ * server.js
+ * Copyright (C) 2015 ******* <****@********>
+ */
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
