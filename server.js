@@ -41,7 +41,7 @@ var entrant = function (id, name) {
     this.vote = null;    // 投票
     this.lifeAndDeath = true;
 };
-//        player.push({ id: socket.id, name: name, role: role.none, live: true, death: 0, vote: -1 });
+
 var members = function() {
     this.member = new Array();
 
@@ -63,6 +63,7 @@ var members = function() {
     };
     this.setCast = function() {
         var numOfMember = this.member.length;
+        if ( numOfMember < 2) return false;
         this.castTable = new Array();
         this.castTable = castList[numOfMember];
         this.shuffle(this.castTable);
@@ -70,6 +71,7 @@ var members = function() {
         for (var i in this.member) {
             this.member[i].role = this.castTable[i];
         };
+        return true;
     };
     this.getUserName = function(id) {
         for (var i in this.member) {
@@ -88,7 +90,7 @@ var player = new members();
 player.setMember(new entrant(1,1));
 player.setMember(new entrant(2,2));
 player.setMember(new entrant(3,3));
-player.setCast();
+player.setCast(); falseならを実装
 player.getMember();
 
 getUserName(id)
