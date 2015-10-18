@@ -74,13 +74,14 @@ var members = function() {
 
 };
 
-
+/* サンプルコード
 var player = new members();
-
-
-
-
-
+player.setMember(new entrant(1,1));
+player.setMember(new entrant(2,2));
+player.setMember(new entrant(3,3));
+player.setCast();
+player.getMember();
+*/
 
 
 
