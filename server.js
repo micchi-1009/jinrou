@@ -7,11 +7,20 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-var players = new Array();
+var players = function() {
+    this.member = new Array();
+    
+    this.setMember = function(entrant) {
+        this.member.push(entrant);
+    };
+    this.getMember = function() {
+        return this.member;
+    };
 
-// 参加者コンストラクタ
+};
+
+// 参加者情報コンストラクタ
 var entrant = function (id, name) {
-
     this.socketId = id;  // socket.ioのID
     this.userName = name;// ユーザ名
     this.role = null;    // 役割
@@ -19,6 +28,12 @@ var entrant = function (id, name) {
     this.lifeAndDeath = true;
 
 };
+
+/*
+var aa = new players();
+aa.setMember(new entrant(0,0));
+*/
+
 
 // 配列ランダムに混ぜる関数
 var shuffle = function (array) {
@@ -39,13 +54,8 @@ var shuffle = function (array) {
 // wwwディレクトリを静的ファイルディレクトリとして登録
 app.use(express.static('www'));
 
-// サーバを開始
+// サーバを待ち受け
 server.listen(process.env.PORT || 3000);
-
-
-
-// よび
-players.push(new entrant(0,0));
 
 
 
