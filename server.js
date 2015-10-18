@@ -7,16 +7,30 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-var players = function() {
-    this.member = new Array();
-    
-    this.setMember = function(entrant) {
-        this.member.push(entrant);
-    };
-    this.getMember = function() {
-        return this.member;
-    };
+// 配役を示す連想配列
+var castList = {
+    2: [0, 1],
+    3: [0, 1, 2],
+    4: [0, 0, 1, 2],
+    5: [0, 0, 0, 1, 2],
 
+    6: [0, 0, 0, 0, 1, 2],
+    7: [0, 0, 0, 0, 0, 1, 2],
+    8: [0, 0, 0, 0, 0, 1, 1, 2],
+    9: [0, 0, 0, 0, 0, 1, 1, 2, 3],
+    10: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4],
+    11: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5],
+    12: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5],
+    13: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6],
+    14: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    15: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    16: [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    17: [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    18: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    19: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    20: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    21: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
+    22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
 
 // 参加者情報コンストラクタ
@@ -26,28 +40,49 @@ var entrant = function (id, name) {
     this.role = null;    // 役割
     this.vote = null;    // 投票
     this.lifeAndDeath = true;
+};
+
+var members = function() {
+    this.member = new Array();
+
+    this.setMember = function(entrant) {
+        this.member.push(entrant);
+    };
+    this.getMember = function() {
+        return this.member;
+    };
+    this.shuffle = function (array) {
+        var n = array.length, t, i;
+
+        while (n) {
+            i = Math.floor(Math.random() * n--);
+            t = array[n];
+            array[n] = array[i];
+            array[i] = t;
+        }
+    };
+    this.setCast = function() {
+        var numOfMember = this.getMember().length;
+        this.castTable = new Array();
+        this.castTable = castList[numOfMember];
+        this.shuffle(this.castTable);
+
+        for (var i in this.member) {
+            this.member[i].role = this.castTable[i];
+        };
+    };
 
 };
 
-/*
-var aa = new players();
-aa.setMember(new entrant(0,0));
-*/
+
+var player = new members();
 
 
-// 配列ランダムに混ぜる関数
-var shuffle = function (array) {
-    var n = array.length, t, i;
 
-    while (n) {
-        i = Math.floor(Math.random() * n--);
-        t = array[n];
-        array[n] = array[i];
-        array[i] = t;
-    }
 
-    return array;
-};
+
+
+
 
 /* -- -- */
 
@@ -56,6 +91,21 @@ app.use(express.static('www'));
 
 // サーバを待ち受け
 server.listen(process.env.PORT || 3000);
+
+
+
+
+
+
+
+io.on('connection', function (socket) {
+
+
+
+});
+
+
+/* -------------no refactating--------------- */
 
 
 
@@ -86,30 +136,7 @@ var role = {
     inum: 7
 };
 
-var match = {
-    2: [0, 1],
-    3: [0, 1, 2],
-    4: [0, 0, 1, 2],
-    5: [0, 0, 0, 1, 2],
 
-    6: [0, 0, 0, 0, 1, 2],
-    7: [0, 0, 0, 0, 0, 1, 2],
-    8: [0, 0, 0, 0, 0, 1, 1, 2],
-    9: [0, 0, 0, 0, 0, 1, 1, 2, 3],
-    10: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4],
-    11: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5],
-    12: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5],
-    13: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6],
-    14: [0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    15: [0, 0, 0, 0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    16: [0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    17: [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    18: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    19: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    20: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    21: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
-    22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
-};
 
 function gamestart() {
     var memcount = player.length;
@@ -125,7 +152,9 @@ function gamestart() {
     console.log(match[memcount]);
 };
 
-io.on('connection', function (socket) {
+
+
+
 
     var userName;
 
@@ -235,5 +264,3 @@ io.on('connection', function (socket) {
         // プレイヤー情報を送る
         io.emit('player', player);
     });
-
-});
