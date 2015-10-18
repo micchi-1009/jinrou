@@ -41,7 +41,7 @@ var entrant = function (id, name) {
     this.vote = null;    // 投票
     this.lifeAndDeath = true;
 };
-
+//        player.push({ id: socket.id, name: name, role: role.none, live: true, death: 0, vote: -1 });
 var members = function() {
     this.member = new Array();
 
@@ -62,7 +62,7 @@ var members = function() {
         }
     };
     this.setCast = function() {
-        var numOfMember = this.getMember().length;
+        var numOfMember = this.member.length;
         this.castTable = new Array();
         this.castTable = castList[numOfMember];
         this.shuffle(this.castTable);
@@ -71,21 +71,29 @@ var members = function() {
             this.member[i].role = this.castTable[i];
         };
     };
-
+    this.getUserName = function(id) {
+        for (var i in this.member) {
+            if (this.member[i].socketId == id) {
+                return this.member[i].userName;
+            }
+        }
+    };
 };
 
-/* サンプルコード
+
+/* -- -- */
 var player = new members();
+
+/* サンプルコード
 player.setMember(new entrant(1,1));
 player.setMember(new entrant(2,2));
 player.setMember(new entrant(3,3));
 player.setCast();
 player.getMember();
+
+getUserName(id)
 */
 
-
-
-/* -- -- */
 
 // wwwディレクトリを静的ファイルディレクトリとして登録
 app.use(express.static('www'));
@@ -94,28 +102,25 @@ app.use(express.static('www'));
 server.listen(process.env.PORT || 3000);
 
 
-
-
-
-
-
 io.on('connection', function (socket) {
 
+    console.log("新しい接続がありました。" + socket.id);
 
+    // ユーザの参加処理
+    // ToDo: userNameを修正 userJoinなど
+    socket.on('userName', function (name) {
+        player.setMember(new entrant(socket.id, name));
+        // ToDo: kaigiを修正
+        io.emit('kaigi', { userName: "GM", msg: name + "さんがログインしました。"});
+    });
 
 });
 
 
-/* -------------no refactating--------------- */
+/* -------------Not refactoring--------------- */
 
-
-
-
-
-var player = new Array();
 
 var turn = 0;
-
 
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = {
@@ -123,7 +128,6 @@ var actions = {
     2: -1,
     5: -1
 };
-
 
 var role = {
     none: -1,
@@ -137,33 +141,6 @@ var role = {
     inum: 7
 };
 
-
-
-function gamestart() {
-    var memcount = player.length;
-
-    var change = match[memcount];
-
-    shuffle(change);
-
-    for (var i = 0; i < memcount; i++) {
-        player[i]['role'] = change[i];
-    }
-
-    console.log(match[memcount]);
-};
-
-
-
-
-
-    var userName;
-
-    console.log("新しい接続がありました。" + socket.id);
-    
-    // プレイヤー情報を送る
-    io.emit('player', player);
-    
     // チャットをmsgに保存
     socket.on('kaigi', function (msg) {
 
@@ -243,25 +220,9 @@ function gamestart() {
 
             sendflag = false;
         }
-       
-        // 名前の登録
-        for (var arr in player) {
-            if (player[arr]['id'] == socket.id) {
-                userName = player[arr]['name'];
-            }
-        }
-        
+               
         // チャット送信
-        if (sendflag) {
+        if (sendflag) {//コマンドをはじく処理
             io.emit('kaigi', { msg: msg, userName: userName });
         }
-    });
-
-    // GMログインメッセージ
-    socket.on('userName', function (msg) {
-        player.push({ id: socket.id, name: msg, role: role.none, live: true, death: 0, vote: -1 });
-        io.emit('kaigi', { msg: msg + "さんがログインしました。", userName: "GM" });
-
-        // プレイヤー情報を送る
-        io.emit('player', player);
     });
