@@ -84,7 +84,7 @@ function gamestart(shonichi) {
         for (var i = 0; i < memcount; i++) {
             player[i]['role'] = change[i];
         }
-    }while(player[shonichi]['role'] == role.wolf)
+    } while(player[shonichi]['role'] == role.wolf)
 
     console.log(match[memcount]);
 };
@@ -197,7 +197,9 @@ io.on('connection', function (socket) {
         
         // チャット送信
         if ( sendflag ) { 
-            io.emit('kaigi', { msg: msg, userName: userName });
+            
+            
+            io.emit('kaigi', { msg: msg, userName: userName, turn: turn });
         }
     });
 

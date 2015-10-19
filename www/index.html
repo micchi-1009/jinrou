@@ -58,7 +58,7 @@
 			background-color: rgba(0, 0, 0, 0) !important;
 		}
 		
-		#t-1 {
+		.overview {
 			/*	position:relative;*/
 			overflow-x: hidden;
 			overflow-y: scroll;
@@ -69,7 +69,7 @@
 			padding-left: 0px;
 		}
 		
-		#t-1 table {
+		.overview table  {
 			/*position: absolute;*/
 			/*    top: 245px;
     position: absolute;*/
@@ -77,11 +77,11 @@
 			border-collapse: collapse;
 		}
 		
-		#t-1 table td {
+		.overview table td {
 			word-break: break-all;
 		}
 		
-		#t-1 table tr {
+		.overview table tr {
 			border-bottom: 1px dashed #000;
 		}
 		
@@ -155,8 +155,23 @@ $(document).ready(function(){
 		 data.msg = data.msg.replace( /\n/g , "<br>" );
 		 data.msg = data.msg.replace( / /g , "&nbsp;" );
 
-		 $('#t-1 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
-		 $(".overview").scrollTop($("#t-1")[0].scrollHeight);
+		if(data.userName == 'GM'){
+	
+			$('#t-1 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
+			$(".overview").scrollTop($("#t-1")[0].scrollHeight);
+			$('#t-2 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
+			$(".overview").scrollTop($("#t-2")[0].scrollHeight);
+		}else{
+
+			if(data.turn%2==0){
+				$('#t-1 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
+				$(".overview").scrollTop($("#t-1")[0].scrollHeight);
+			}else{
+				$('#t-2 table').append($('<tr>').append('<td>'+data.userName+'<td>'+data.msg));
+				$(".overview").scrollTop($("#t-2")[0].scrollHeight);
+			}
+			
+		}
 	 });
 	 
 	 // 名前、生死判定、役職のリスト
@@ -212,7 +227,9 @@ $(document).ready(function(){
 		<div id="t-1" class="overview">
 			<table></table>
 		</div>
-		<div id="t-2">コンテンツ２</div>
+		<div id="t-2" class="overview">
+			<table></table>
+		</div>
 	</div>
 
 	<br>
@@ -229,7 +246,7 @@ $(document).ready(function(){
 	<textarea id="kaigi" style="height: 100px; width: 450px;"></textarea>
 	<input id="sendButton" type="button" value="送信">
 
-	<div id="player" class="overview">
+	<div id="player">
 		<table></table>
 	</div>
 
