@@ -167,6 +167,16 @@ io.on('connection', function (socket) {
             io.emit('player', player);
         }
         
+        //killコマンド
+        result = msg.match(/\/kill (\d+)/);
+        if(result){
+            player[result[1]]['live'] = false;
+            
+            sendflag = false;
+             // プレイヤー情報を送る
+            io.emit('player', player);
+        }
+        
         // actionコマンド
         result = msg.match(/\/action (\w+) (\d+)/);
         if(result){
