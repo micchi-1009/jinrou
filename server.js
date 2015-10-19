@@ -6,6 +6,13 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+// wwwディレクトリを静的ファイルディレクトリとして登録
+app.use(express.static('www'));
+
+// サーバを開始
+server.listen(process.env.PORT || 3000);
+
+
 var player = new Array();
 
 var turn = 0;
@@ -14,7 +21,7 @@ var turn = 0;
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = { 
   1 : -1,  
-  2 : -1 ,
+  2 : -1,
   5 : -1  
 };
 
@@ -74,11 +81,13 @@ function shuffle(array) {
 function gamestart(shonichi) {
     turn = 1;
     
+    io.emit('kaigi', { msg: timing(), userName: "GM" });
+    
     var memcount = player.length;
 
     do{
         var change = match[memcount];
-    
+        
         shuffle(change);
     
         for (var i = 0; i < memcount; i++) {
@@ -89,11 +98,47 @@ function gamestart(shonichi) {
     console.log(match[memcount]);
 };
 
-// wwwディレクトリを静的ファイルディレクトリとして登録
-app.use(express.static('www'));
+function timing() {
+    var day = Math.ceil(turn / 2);
+    var time;
 
-// サーバを開始
-server.listen(process.env.PORT || 3000);
+    if (turn % 2 == 0) {
+        time = "昼";
+    } else {
+        time = "夜";
+    }
+
+    return day + "日目 " + time;
+}
+
+function next() {
+
+    if (turn % 2 == 1) {
+        // 夜→昼
+        turn++;
+        io.emit('kaigi', { msg: timing(), userName: "GM" });
+
+        if (actions[role.wolf] != actions[role.hunt]) {
+            player[actions[role.wolf]]['live'] = false;
+            player[actions[role.wolf]]['death'] = turn;
+
+
+            io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
+        }
+
+    } else {
+        // 昼→夜
+        // TODO: 投票処理
+        turn++;
+        console.log("昼→夜");
+        io.emit('kaigi', { msg: timing(), userName: "GM" });
+    }
+
+    
+    
+    // プレイヤー情報を送る
+    io.emit('player', player);
+};
 
 io.on('connection', function (socket) {
 
@@ -132,19 +177,26 @@ io.on('connection', function (socket) {
                 // プレイヤー情報を送る
                 io.emit('player', player);   
                 break; 
+                
+            case "/nextturn":
+                next();
+                sendflag = false;
         }
         var result;
         
         //startコマンド
         result = msg.match(/\/start (\d+)/);
-        if(result){
+        if (result) {
+
+            actions[role.wolf] = result[1];
+
             if (turn == 0) {
                 gamestart(result[1]);
                 console.log("game start!");
             }
-                sendflag = false;
-                // プレイヤー情報を送る
-                io.emit('player', player);
+            sendflag = false;
+            // プレイヤー情報を送る
+            io.emit('player', player);
         }
     
         // voteコマンド
