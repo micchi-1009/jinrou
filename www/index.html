@@ -140,7 +140,7 @@ $(document).ready(function(){
 
 		// 文字制限
 		if ( (user.length>0 && user.length<9) && (user!="GM") ) {
-			socket.emit('userName', user);
+			socket.emit('userJoin', user);
 			$('#control').dialog('close');
 			$('#yourname').text(user);
 		} else {

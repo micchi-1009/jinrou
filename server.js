@@ -42,8 +42,9 @@ var entrant = function (id, name) {
     this.lifeAndDeath = true;
 };
 
-var members = function() {
-    this.member = new Array();
+var game = function() {
+    this.member = new Array();  // メンバーのオブジェクト
+    this.numOfProgression = 0;  // ゲームの進行カウント
 
     this.setMember = function(entrant) {
         this.member.push(entrant);
@@ -63,7 +64,7 @@ var members = function() {
     };
     this.setCast = function() {
         var numOfMember = this.member.length;
-        if ( numOfMember < 2) return false;
+        if ( numOfMember < 2 || this.numOfProgression!=0 ) return false;
         this.castTable = new Array();
         this.castTable = castList[numOfMember];
         this.shuffle(this.castTable);
@@ -80,20 +81,38 @@ var members = function() {
             }
         }
     };
+    this.gameStart = function() {
+        if (this.setCast()) {
+            // ゲーム開始後の処理
+            this.numOfProgression = 1;
+        } else {
+            //ゲームが開始出来ない場合の特別な処理
+        }
+    };
+    this.gameInit = function() {
+        this.member = new Array();
+        this.numOfProgression = 0;
+    };
+    this.gemeStop = function() {
+        // gameStopの存在意義が分からないので実装保留
+        this.gameInit();
+        /*
+        this.numOfProgression = 1;
+        for ( var i in this.member) {
+            this.member[i].role = null;    // 役割
+            this.member[i].vote = null;    // 投票
+            this.member[i].lifeAndDeath = true;
+        }
+        */
+    };
 };
 
 
 /* -- -- */
-var player = new members();
+var g = new game();
 
-/* サンプルコード
-player.setMember(new entrant(1,1));
-player.setMember(new entrant(2,2));
-player.setMember(new entrant(3,3));
-player.setCast(); falseならを実装
+/*
 player.getMember();
-
-getUserName(id)
 */
 
 
@@ -103,27 +122,51 @@ app.use(express.static('www'));
 // サーバを待ち受け
 server.listen(process.env.PORT || 3000);
 
-
 io.on('connection', function (socket) {
 
     console.log("新しい接続がありました。" + socket.id);
 
     // ユーザの参加処理
-    // ToDo: userNameを修正 userJoinなど
-    socket.on('userName', function (name) {
-        player.setMember(new entrant(socket.id, name));
+    socket.on('userJoin', function (name) {
+        g.setMember(new entrant(socket.id, name));
         // ToDo: kaigiを修正
         io.emit('kaigi', { userName: "GM", msg: name + "さんがログインしました。"});
+    });
+
+    // 会議チャットを受信
+    socket.on('kaigi', function (text) {
+        
+        // 受信したメッセージをコンソールログに出力
+        console.log(socket.id + ': ' + text);
+
+        // ゲーム開始のパラメータを受信した場合
+        switch (text) {
+            // 以下GMコマンドとして動作
+            case "/start":
+                g.gameStart();
+                break;
+            case "/stop":
+                g.gameStop();
+                break;
+            case "/debug":
+                // 用途に合わせて追加する
+                break;
+            // 会議チャット用
+            default:
+                io.emit('kaigi', { userName: g.getUserName(socket.id), msg: text });
+                break;
+        }
+
+        // プレイヤー情報を送る
+        //io.emit('player', player);タイミング整理
+
     });
 
 });
 
 
 /* -------------Not refactoring--------------- */
-
-
-var turn = 0;
-
+/*
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = {
     1: -1,
@@ -132,59 +175,20 @@ var actions = {
 };
 
 var role = {
-    none: -1,
-    vill: 0,
-    wolf: 1,
-    fort: 2,
-    psyc: 3,
-    madm: 4,
-    hunt: 5,
-    shar: 6,
-    inum: 7
+    none: -1,   // 無し
+    vill: 0,    // 村人
+    wolf: 1,    // 人狼
+    fort: 2,    // 占い師
+    psyc: 3,    // 霊能者
+    madm: 4,    // 狂人
+    hunt: 5,    // 狩人
+    shar: 6,    // 共有者
+    inum: 7     // 妖狐
 };
-/* roleの変換表
-var exchange = {
-	'-1': '無し',
-	'0': '村人',
-	'1': '人狼',
-	'2': '占い師',
-	'3': '霊能者',
-	'4': '狂人',
-	'5': '狩人',
-	'6': '共有者',
-	'7': '妖狐',	
-};*/
-    // チャットをmsgに保存
-    socket.on('kaigi', function (msg) {
 
-        var sendflag = true;
-        console.log(socket.id + ': ' + msg);
-       
         // なんちゃってGMコマンド
         switch (msg) {
-
-            case "/start":
-                gamestart();
-                console.log("game start!");
-                sendflag = false;
-                // プレイヤー情報を送る
-                io.emit('player', player);
-                break;
-
-            case "/stop":
-                turn = 0;
-                for (var arr in player) {
-                    player[arr]['role'] = role.none;
-                    player[arr]['live'] = true;
-                    player[arr]['death'] = 0;
-                    player[arr]['vote'] = -1;
-                }
-                sendflag = false;
-                // プレイヤー情報を送る 
-                io.emit('player', player);
-                break;
-
-            case "/debug":
+            default:
                 console.log(actions);
                 sendflag = false;
                 // プレイヤー情報を送る
@@ -233,9 +237,4 @@ var exchange = {
 
             sendflag = false;
         }
-               
-        // チャット送信
-        if (sendflag) {//コマンドをはじく処理
-            io.emit('kaigi', { msg: msg, userName: userName });
-        }
-    });
+*/
