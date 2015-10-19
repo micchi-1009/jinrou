@@ -127,7 +127,7 @@ io.on('connection', function (socket) {
                 break;
                 
             case "/debug":
-                console.log(actions);
+                player[2]['live']=false;
                 sendflag = false;
                 // プレイヤー情報を送る
                 io.emit('player', player);   

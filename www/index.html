@@ -186,8 +186,13 @@ $(document).ready(function(){
 		
 		$('#player table').empty();
 		for (var arr in data){
-			$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
-		 	if ( socket.id == data[arr]['id'] ) {
+			if (data[arr]['live'] == true){
+				$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
+			}else{
+				$('#player table').append($('<tr>').append( '<td><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
+			}
+			 
+			 if ( socket.id == data[arr]['id'] ) {
 				mynumber = arr;
 				$('#yourrole').text(exchange[data[arr]['role']]);
 		 	}
@@ -195,6 +200,7 @@ $(document).ready(function(){
 		if ( mynumber == -1){
 			// キックされた人用の処理	
 			$('#sendButton').hide();
+			$('#judge').hide();
 		} else {
 			$('#sendButton').show();		
 		}
