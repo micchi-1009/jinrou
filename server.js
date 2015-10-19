@@ -70,16 +70,21 @@ function shuffle(array) {
     return array;
 }
 
-function gamestart() {
+//　ゲームをスタートする
+function gamestart(shonichi) {
+    turn = 1;
+    
     var memcount = player.length;
 
-    var change = match[memcount];
-
-    shuffle(change);
-
-    for (var i = 0; i < memcount; i++) {
-        player[i]['role'] = change[i];
-    }
+    do{
+        var change = match[memcount];
+    
+        shuffle(change);
+    
+        for (var i = 0; i < memcount; i++) {
+            player[i]['role'] = change[i];
+        }
+    }while(player[shonichi]['role'] == role.wolf)
 
     console.log(match[memcount]);
 };
@@ -108,14 +113,6 @@ io.on('connection', function (socket) {
         // なんちゃってGMコマンド
         switch (msg) {
 
-            case "/start":
-                gamestart();
-                console.log("game start!");
-                sendflag = false;
-                // プレイヤー情報を送る
-                io.emit('player', player);
-                break;
-
             case "/stop":
                 turn = 0;
                 for (var arr in player) {
@@ -138,6 +135,18 @@ io.on('connection', function (socket) {
         }
         var result;
         
+        //startコマンド
+        result = msg.match(/\/start (\d+)/);
+        if(result){
+            if (turn == 0) {
+                gamestart(result[1]);
+                console.log("game start!");
+            }
+                sendflag = false;
+                // プレイヤー情報を送る
+                io.emit('player', player);
+        }
+    
         // voteコマンド
         result = msg.match(/\/vote (\d+) (\d+)/);
         if(result){
