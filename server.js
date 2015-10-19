@@ -187,6 +187,10 @@ io.on('connection', function (socket) {
             
             sendflag = false;
         }
+        
+        socket.on('judge',function(target){
+            console.log(target);
+        });
        
         // 名前の登録
         for (var arr in player) {

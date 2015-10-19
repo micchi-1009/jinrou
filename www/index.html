@@ -149,6 +149,11 @@ $(document).ready(function(){
 		}
 
 	});
+	
+	// 判定ボタンを押したとき
+	$('#judge').on('click',function(){
+		socket.emit('judge',{target: $('input[name=q2]:checked').val()});
+	});
 
 	// サーバーから送られてきたチャット内容の処理
  	socket.on('kaigi', function(data){
@@ -181,7 +186,7 @@ $(document).ready(function(){
 		
 		$('#player table').empty();
 		for (var arr in data){
-			$('#player table').append($('<tr>').append( '<td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
+			$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
 		 	if ( socket.id == data[arr]['id'] ) {
 				mynumber = arr;
 				$('#yourrole').text(exchange[data[arr]['role']]);
@@ -193,6 +198,7 @@ $(document).ready(function(){
 		} else {
 			$('#sendButton').show();		
 		}
+
 	 });
 	
 	
@@ -249,6 +255,8 @@ $(document).ready(function(){
 	<div id="player">
 		<table></table>
 	</div>
+	
+	<input id="judge" type="button" value="判定">
 
 	<!-- コントローラダイアログ -->
 	<div id="control" class="dialog">
