@@ -93,7 +93,7 @@ var game = function() {
         this.member = new Array();
         this.numOfProgression = 0;
     };
-    this.gemeStop = function() {
+    this.gameStop = function() {
         // gameStopの存在意義が分からないので実装保留
         this.gameInit();
         /*
