@@ -112,6 +112,7 @@ var exchange = {
 
 var user;
 var mynumber;
+var turn;
 var socket = io();
 
 $(document).ready(function(){
@@ -202,11 +203,19 @@ $(document).ready(function(){
 			$('#sendButton').hide();
 			$('#judge').hide();
 		} else {
-			$('#sendButton').show();		
+			$('#sendButton').show();
+			$('#judge').show();		
 		}
 
 	 });
-	
+	 
+	 // ボタンの表示変更
+	socket.on('turn', function(turn){
+		console.log("aaaaaaa");
+		if(turn%2==0){
+			$('#judge').val("投票");
+		}
+	});
 	
 	// ctrl+enterでの送信
 	$('#kaigi').keydown(function(e){

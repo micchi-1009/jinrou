@@ -81,6 +81,8 @@ function shuffle(array) {
 function gamestart(shonichi) {
     turn = 1;
     
+    io.emit('turn', turn);
+    
     io.emit('kaigi', { msg: timing(), userName: "GM" });
     
     var memcount = player.length;
@@ -130,11 +132,10 @@ function next() {
         // 昼→夜
         // TODO: 投票処理
         turn++;
-        console.log("昼→夜");
         io.emit('kaigi', { msg: timing(), userName: "GM" });
     }
-
-    
+    // ターン情報を送る
+    io.emit('turn', turn);
     
     // プレイヤー情報を送る
     io.emit('player', player);
@@ -219,7 +220,7 @@ io.on('connection', function (socket) {
             io.emit('player', player);
         }
         
-        //killコマンド
+        // killコマンド
         result = msg.match(/\/kill (\d+)/);
         if(result){
             player[result[1]]['live'] = false;
@@ -227,6 +228,17 @@ io.on('connection', function (socket) {
             sendflag = false;
              // プレイヤー情報を送る
             io.emit('player', player);
+        }
+        
+        // turnコマンド
+        result = msg.match(/\/turn (\d+)/);
+        if (result) {
+            turn = result[1];
+
+            sendflag = false;
+            
+            // ターン情報を送る
+            io.emit('turn', turn);
         }
         
         // actionコマンド
