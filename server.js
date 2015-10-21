@@ -235,6 +235,8 @@ io.on('connection', function (socket) {
         if (result) {
             turn = result[1];
 
+io.emit('kaigi', { msg: timing(), userName: "GM" });
+
             sendflag = false;
             
             // ターン情報を送る
