@@ -224,11 +224,22 @@ $(document).ready(function(){
 		if(mynumber != -1 && data[mynumber]['live']==true){
 			if(data[mynumber]['role'] == 1 && turn%2 == 1 ){
 				$('#judge').val("噛む");
-			}else if(data[mynumber]['role'] == 2 && turn%2 == 1 ){
+			} else if(data[mynumber]['role'] == 2 && turn%2 == 1 ){
 				$('#judge').val("占う");
-			}else if(data[mynumber]['role'] == 5 && turn%2 == 1 ){
+			} else if(data[mynumber]['role'] == 5 && turn%2 == 1 ){
 				$('#judge').val("守る");
+			} else {
+				if( turn%2 == 1  && (data[mynumber]['role'] == 0
+				|| data[mynumber]['role'] == 3
+				|| data[mynumber]['role'] == 4
+				|| data[mynumber]['role'] == 6
+				|| data[mynumber]['role'] == 7)
+			) {
+				$('#judge').hide();			
+			} else if (turn%2==0) {
+				$('#judge').show();
 			}
+				}
 		}else{
 			$('#judge').hide();
 		}
