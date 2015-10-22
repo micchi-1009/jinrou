@@ -138,7 +138,7 @@ function next() {
     io.emit('turn', turn);
     
     // プレイヤー情報を送る
-    io.emit('player', player);
+    io.emit('player', {player:player,turn:turn});
 };
 
 io.on('connection', function (socket) {
@@ -148,7 +148,7 @@ io.on('connection', function (socket) {
     console.log("新しい接続がありました。" + socket.id);
     
     // プレイヤー情報を送る
-    io.emit('player', player);
+    io.emit('player', {player:player,turn:turn});
     
     // チャットをmsgに保存
     socket.on('kaigi', function (msg) {
@@ -169,14 +169,14 @@ io.on('connection', function (socket) {
                 }
                 sendflag = false;
                 // プレイヤー情報を送る 
-                io.emit('player', player);
+                io.emit('player', {player:player,turn:turn});
                 break;
                 
             case "/debug":
                 player[2]['live']=false;
                 sendflag = false;
                 // プレイヤー情報を送る
-                io.emit('player', player);   
+                io.emit('player', {player:player,turn:turn});   
                 break; 
                 
             case "/nextturn":
@@ -197,7 +197,7 @@ io.on('connection', function (socket) {
             }
             sendflag = false;
             // プレイヤー情報を送る
-            io.emit('player', player);
+            io.emit('player', {player:player,turn:turn});
         }
     
         // voteコマンド
@@ -217,7 +217,7 @@ io.on('connection', function (socket) {
             
             sendflag = false;
             // プレイヤー情報を送る
-            io.emit('player', player);
+            io.emit('player', {player:player,turn:turn});
         }
         
         // killコマンド
@@ -227,7 +227,7 @@ io.on('connection', function (socket) {
             
             sendflag = false;
             // プレイヤー情報を送る
-            io.emit('player', player);
+            io.emit('player', {player:player,turn:turn});
         }
             
          // rebornコマンド
@@ -237,7 +237,7 @@ io.on('connection', function (socket) {
                 
             sendflag = false;
             // プレイヤー情報を送る
-            io.emit('player', player)
+            io.emit('player', {player:player,turn:turn});
          }
         
         // turnコマンド
@@ -250,7 +250,7 @@ io.on('connection', function (socket) {
             sendflag = false;
             
             // ターン情報を送る
-            io.emit('turn', turn);
+            io.emit('player', {player:player,turn:turn});
         }
         
         // actionコマンド
@@ -299,7 +299,7 @@ io.on('connection', function (socket) {
         io.emit('kaigi', { msg: msg + "さんがログインしました。", userName: "GM" });
 
         // プレイヤー情報を送る
-        io.emit('player', player);
+        io.emit('player', {player:player,turn:turn});
     });
 
 	/*
