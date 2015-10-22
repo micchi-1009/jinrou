@@ -112,7 +112,7 @@ var exchange = {
 
 var user;
 var mynumber;
-var turn;
+var turn = 0;
 var socket = io();
 
 $(document).ready(function(){
@@ -190,15 +190,23 @@ $(document).ready(function(){
 			if (data[arr]['live'] == true){
 				$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
 			}else{
-				$('#player table').append($('<tr>').append( '<td><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
+				$('#player table').append($('<tr>').append( '<td><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]+ '<td>'+ '<td>'+data[arr]['death']));
 			}
 			 
-			 if ( socket.id == data[arr]['id'] ) {
+			if ( socket.id == data[arr]['id'] ) {
 				mynumber = arr;
-				$('#yourrole').text(exchange[data[arr]['role']]);
+				$('#yourrole').text(exchange[data[arr]['role']]);	
 		 	}
 		}
-		if ( mynumber == -1){
+		
+		// 死んだ人用の処理
+		if(mynumber != -1 && data[mynumber]['live']==false){
+			$('#judge').hide();
+		}else{
+			$('#judge').show();
+		}
+		
+		if ( mynumber == -1 || data['live'] == false){
 			// キックされた人用の処理	
 			$('#sendButton').hide();
 			$('#judge').hide();
@@ -206,15 +214,14 @@ $(document).ready(function(){
 			$('#sendButton').show();
 			$('#judge').show();		
 		}
-
 	 });
 	 
 	 // ボタンの表示変更
 	socket.on('turn', function(turn){
-		console.log("aaaaaaa");
 		if(turn%2==0){
 			$('#judge').val("投票");
 		}
+		
 	});
 	
 	// ctrl+enterでの送信

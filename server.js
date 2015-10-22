@@ -226,9 +226,19 @@ io.on('connection', function (socket) {
             player[result[1]]['live'] = false;
             
             sendflag = false;
-             // プレイヤー情報を送る
+            // プレイヤー情報を送る
             io.emit('player', player);
         }
+            
+         // rebornコマンド
+         result = msg.match(/\/reborn (\d+)/);
+         if(result){
+            player[result[1]]['live'] = true;
+                
+            sendflag = false;
+            // プレイヤー情報を送る
+            io.emit('player', player)
+         }
         
         // turnコマンド
         result = msg.match(/\/turn (\d+)/);
