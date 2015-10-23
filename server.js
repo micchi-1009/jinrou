@@ -153,14 +153,15 @@ function next(hit) {
         // 夜→昼
         turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
-
+        
+        // 人狼の噛み判定
         if (actions[role.wolf] != actions[role.hunt]) {
             player[actions[role.wolf]]['live'] = false;
             player[actions[role.wolf]]['death'] = turn;
             
             io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
         }
-        
+        // 占い師の妖狐呪殺
         if(player[actions[role.fort]]['role'] == role.inum){
             player[actions[role.fort]]['live'] = false;
             player[actions[role.fort]]['death'] = turn;
@@ -170,9 +171,6 @@ function next(hit) {
 
     } else {
         // 昼→夜
-        // TODO: 投票処理        
-        // 投票処理をする
-        
         for(var arr in player){
             io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"] , userName: "GM" });
         }
@@ -187,6 +185,46 @@ function next(hit) {
     
     // プレイヤー情報を送る
     io.emit('player', {player:player,turn:turn});
+};
+
+function winer(){
+    
+    var werewolf=0;
+    var villager=0;
+    var fox=0;
+    
+    for(var arr in player){
+        if(player[arr]['live'] == true){
+            if(player[arr]['role'] == role.wolf){
+                werewolf++;
+            }else{
+                villager++;
+            }
+        }
+    }
+    
+    if(werewolf >= villager){
+        for(var arr in player){
+            if(player[arr]['live'] == true){
+                io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
+            }
+        }
+        io.emit('kaigi', { msg: "よって、人狼サイドの勝利です。" , userName: "GM" });
+    }else{
+        for(var arr in player){
+            if(player[arr]['live'] == true){
+                io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
+                if(player[arr]['role'] == role.inum){
+                    fox=1;
+                }
+            }
+        }
+        if(fox == 1){
+            io.emit('kaigi', { msg: "よって、妖狐の勝利です。" , userName: "GM" });
+        }else{
+            io.emit('kaigi', { msg: "よって、村人サイドの勝利です。" , userName: "GM" });
+        }
+    }
 };
 
 io.on('connection', function (socket) {
