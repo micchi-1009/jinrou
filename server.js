@@ -122,9 +122,15 @@ function next() {
         if (actions[role.wolf] != actions[role.hunt]) {
             player[actions[role.wolf]]['live'] = false;
             player[actions[role.wolf]]['death'] = turn;
-
-
+            
             io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
+        }
+        
+        if(player[actions[role.fort]]['role'] == role.inum){
+            player[actions[role.fort]]['live'] = false;
+            player[actions[role.fort]]['death'] = turn;
+            
+            io.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
         }
 
     } else {
