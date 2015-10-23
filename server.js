@@ -99,6 +99,7 @@ function gamestart(shonichi) {
     console.log(match[memcount]);
 };
 
+// 時間の計算
 function timing() {
     var day = Math.ceil(turn / 2);
     var time;
@@ -111,12 +112,42 @@ function timing() {
 
     return day + "日目 " + time;
 }
-
+// 投票の処理
 function voted(){
-    
+    var seikou;
+    var max;
+    var hit;
+    for(var arr in player){
+        player[arr]['voted']=0;
+    }
+    for(var arr in player){
+        player[player['vote']]['voted']++;
+    }
+    for(var arr in player){
+        if(player['arr']['voted']>max){
+            max=player['arr']['voted'];
+            hit=arr;
+            seikou = true;
+        }else{
+            seikou = false;
+        }
+        
+        if(seikou == true){
+            next(hit);
+        }else{
+            // 再投票処理
+            for (var arr in player) {
+                    player[arr]['vote'] = -1;
+                    player[arr]['voted'] = 0;
+            }
+            
+            io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。" , userName: "GM" });
+            io.emit('player', {player:player,turn:turn} );
+        }
+    }
 }
 
-function next() {
+function next(hit) {
 
     if (turn % 2 == 1) {
         // 夜→昼
@@ -142,7 +173,11 @@ function next() {
         // TODO: 投票処理        
         // 投票処理をする
         
+        for(var arr in player){
+            io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"] , userName: "GM" });
+        }
         
+        io.emit('kaigi', { msg: "投票の結果"+player[hit]['name'] + "さんが吊られました。", userName: "GM" });
         
         turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
@@ -179,6 +214,7 @@ io.on('connection', function (socket) {
                     player[arr]['live'] = true;
                     player[arr]['death'] = 0;
                     player[arr]['vote'] = -1;
+                    player[arr]['voted'] = 0;
                 }
                 sendflag = false;
                 // プレイヤー情報を送る 
@@ -295,18 +331,17 @@ io.on('connection', function (socket) {
         }
         
         // チャット送信
-        if ( sendflag ) { 
-            
-            
+        if ( sendflag ) {             
             io.emit('kaigi', { msg: msg, userName: userName, turn: turn });
         }
     });
     
-    
+    // 役職ごとの判定
     socket.on('judge',function(target){
         for(var arr in player){
             if(target['action']=="投票" && player[arr]['vote'] == -1 && player[arr]['id'] == socket.id){
-                
+                player[arr]['vote'] = target['target'];
+                voted();
             }
             if(target['action']=="噛む" && actions[role.wolf] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
                 actions[role.wolf]=target['target'];
