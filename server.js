@@ -25,7 +25,6 @@ var actions = {
   5 : -1  
 };
 
-
 var role = {
     none: -1,
     vill: 0,
@@ -274,9 +273,6 @@ io.on('connection', function (socket) {
             sendflag = false;
         }
         
-        socket.on('judge',function(target){
-            console.log(target);
-        });
        
         // 名前の登録
         for (var arr in player) {
@@ -292,6 +288,32 @@ io.on('connection', function (socket) {
             io.emit('kaigi', { msg: msg, userName: userName, turn: turn });
         }
     });
+    
+    
+    socket.on('judge',function(target){
+        for(var arr in player){
+            if(target['action']=="投票" && player[arr]['id'] == socket.id){
+                
+            }
+            if(target['action']=="噛む" && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
+                actions[role.wolf]=target['target'];
+            }
+            if(target['action']=="占う" && player[arr]['id'] == socket.id && player[arr]['role'] == role.fort){
+                actions[role.fort]=target['target'];
+                if(player[actions[role.fort]]['role'] == role.wolf){
+                    socket.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんは人狼サイドでした。", userName: "GM" });
+                }else{
+                    socket.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんは村人サイドでした。", userName: "GM" });
+                }
+            }
+            if(target['action']=="守る" && player[arr]['id'] == socket.id && player[arr]['role'] == role.hunt){
+                actions[role.hunt]=target['target'];
+            }
+        }
+    });
+
+    
+    
 
     // GMログインメッセージ
     socket.on('userName', function (msg) {
