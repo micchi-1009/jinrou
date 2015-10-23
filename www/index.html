@@ -166,6 +166,8 @@ $(document).ready(function(){
 	$('#judge').on('click',function(){
 		console.log($('#judge').val());
 		socket.emit('judge',{target: $('input[name=q2]:checked').val(), action:$('#judge').val()});
+		
+		$('#judge').hide();
 	});
 
 	// サーバーから送られてきたチャット内容の処理
@@ -243,16 +245,16 @@ $(document).ready(function(){
 				$('#judge').val("守る");
 			} else {
 				if( turn%2 == 1  && (data[mynumber]['role'] == role.vill
-				|| data[mynumber]['role'] == role.psyc
-				|| data[mynumber]['role'] == role.madm
-				|| data[mynumber]['role'] == role.shar
-				|| data[mynumber]['role'] == role.inum)
-			) {
-				$('#judge').hide();			
-			} else if (turn%2==0) {
-				$('#judge').show();
-			}
+					|| data[mynumber]['role'] == role.psyc
+					|| data[mynumber]['role'] == role.madm
+					|| data[mynumber]['role'] == role.shar
+					|| data[mynumber]['role'] == role.inum)
+				) {
+					$('#judge').hide();			
+				} else if (turn%2==0) {
+					$('#judge').show();
 				}
+			}
 		}else{
 			$('#judge').hide();
 		}

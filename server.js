@@ -112,6 +112,10 @@ function timing() {
     return day + "日目 " + time;
 }
 
+function voted(){
+    
+}
+
 function next() {
 
     if (turn % 2 == 1) {
@@ -135,7 +139,11 @@ function next() {
 
     } else {
         // 昼→夜
-        // TODO: 投票処理
+        // TODO: 投票処理        
+        // 投票処理をする
+        
+        
+        
         turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
     }
@@ -278,7 +286,6 @@ io.on('connection', function (socket) {
             
             sendflag = false;
         }
-        
        
         // 名前の登録
         for (var arr in player) {
@@ -298,13 +305,13 @@ io.on('connection', function (socket) {
     
     socket.on('judge',function(target){
         for(var arr in player){
-            if(target['action']=="投票" && player[arr]['id'] == socket.id){
+            if(target['action']=="投票" && player[arr]['vote'] == -1 && player[arr]['id'] == socket.id){
                 
             }
-            if(target['action']=="噛む" && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
+            if(target['action']=="噛む" && actions[role.wolf] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
                 actions[role.wolf]=target['target'];
             }
-            if(target['action']=="占う" && player[arr]['id'] == socket.id && player[arr]['role'] == role.fort){
+            if(target['action']=="占う" && actions[role.fort] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.fort){
                 actions[role.fort]=target['target'];
                 if(player[actions[role.fort]]['role'] == role.wolf){
                     socket.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんは人狼サイドでした。", userName: "GM" });
@@ -312,7 +319,7 @@ io.on('connection', function (socket) {
                     socket.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんは村人サイドでした。", userName: "GM" });
                 }
             }
-            if(target['action']=="守る" && player[arr]['id'] == socket.id && player[arr]['role'] == role.hunt){
+            if(target['action']=="守る" && actions[role.hunt] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.hunt){
                 actions[role.hunt]=target['target'];
             }
         }
@@ -323,7 +330,7 @@ io.on('connection', function (socket) {
 
     // GMログインメッセージ
     socket.on('userName', function (msg) {
-        player.push({ id: socket.id, name: msg, role: role.none, live: true, death: 0, vote: -1 });
+        player.push({ id: socket.id, name: msg, role: role.none, live: true, death: 0, vote: -1, voted: 0 });
         io.emit('kaigi', { msg: msg + "さんがログインしました。", userName: "GM" });
 
         // プレイヤー情報を送る
