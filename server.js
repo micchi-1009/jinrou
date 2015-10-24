@@ -14,9 +14,11 @@ server.listen(process.env.PORT || 3000);
 
 
 var player = new Array();
-
 var turn = 0;
 
+var timer;
+var myTime;
+var phase=0;
 
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = { 
@@ -61,6 +63,28 @@ var match = {
     21: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
+	
+// 実行され続ける部分
+function counter(){
+    
+    /*
+    var nowDate = new Date();
+	var nowTime = nowDate.getHours() * 3600 +  nowDate.getMinutes() * 60 + nowDate.getSeconds();
+    var diffTime = 180 + myTime - nowTime ;
+    console.log(diffTime);
+    if( diffTime <= 0){
+        console.log("ここにはこない");
+        var startDate = new Date();
+        myTime = startDate.getHours() * 3600 +  startDate.getMinutes() * 60 + startDate.getSeconds();
+        next();
+        phase++;
+    if(phase>2){
+        phase=0;
+    }
+}
+    */
+    
+}
 
 // シャッフル
 function shuffle(array) {
@@ -79,6 +103,13 @@ function shuffle(array) {
 //　ゲームをスタートする
 function gamestart(shonichi) {
     turn = 1;
+
+    /*
+    var startDate = new Date();
+    myTime = startDate.getHours() * 3600 +  startDate.getMinutes() * 60 + startDate.getSeconds();
+    timer = setInterval(counter(), 10000);
+    */
+
     
     io.emit('turn', turn);
     
@@ -115,36 +146,39 @@ function timing() {
 // 投票の処理
 function voted(){
     var seikou;
-    var max;
+    var max=0;
     var hit;
     for(var arr in player){
         player[arr]['voted']=0;
     }
     for(var arr in player){
-        player[player['vote']]['voted']++;
+        if(player[arr]['vote']!=-1){
+            player[player[arr]['vote']]['voted']++;
+        }
     }
     for(var arr in player){
-        if(player['arr']['voted']>max){
-            max=player['arr']['voted'];
+        if(player[arr]['voted']>max){
+            max=player[arr]['voted'];
             hit=arr;
             seikou = true;
-        }else{
+        }else if(player[arr]['voted']==max){
             seikou = false;
         }
-        
-        if(seikou == true){
-            next(hit);
-        }else{
-            // 再投票処理
-            for (var arr in player) {
-                    player[arr]['vote'] = -1;
-                    player[arr]['voted'] = 0;
-            }
-            
-            io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。" , userName: "GM" });
-            io.emit('player', {player:player,turn:turn} );
-        }
     }
+    
+    if (seikou == true) {
+        next(hit);
+    } else {
+        // 再投票処理
+        for (var arr in player) {
+            player[arr]['vote'] = -1;
+            player[arr]['voted'] = 0;
+        }
+
+        io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。", userName: "GM" });
+        io.emit('player', { player: player, turn: turn });
+    }
+
 }
 
 function next(hit) {
@@ -172,7 +206,9 @@ function next(hit) {
     } else {
         // 昼→夜
         for(var arr in player){
-            io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"] , userName: "GM" });
+            if(player[arr]['live'] == true){
+                io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"] , userName: "GM" });   
+            }
         }
         
         io.emit('kaigi', { msg: "投票の結果"+player[hit]['name'] + "さんが吊られました。", userName: "GM" });
@@ -207,10 +243,17 @@ function winer(){
         for(var arr in player){
             if(player[arr]['live'] == true){
                 io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
+                if(player[arr]['role'] == role.inum){
+                    fox=1;
+                }
             }
         }
-        io.emit('kaigi', { msg: "よって、人狼サイドの勝利です。" , userName: "GM" });
-    }else{
+        if(fox == 1){
+            io.emit('kaigi', { msg: "よって、妖狐の勝利です。" , userName: "GM" });
+        }else{
+            io.emit('kaigi', { msg: "よって、人狼サイドの勝利です。" , userName: "GM" });
+        }
+    }else if(werewolf == 0){
         for(var arr in player){
             if(player[arr]['live'] == true){
                 io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
@@ -247,6 +290,8 @@ io.on('connection', function (socket) {
 
             case "/stop":
                 turn = 0;
+                clearInterval(timer);
+                
                 for (var arr in player) {
                     player[arr]['role'] = role.none;
                     player[arr]['live'] = true;
@@ -374,12 +419,21 @@ io.on('connection', function (socket) {
         }
     });
     
+    // 全員の投票が終わっていればtrueが返る、そうでなければfalseが返る
+    function checkVote() {
+        for (var i in player) {
+            if (player[i]['vote'] == -1 && player[i]['live'] == true) return false;
+        }
+        return true;
+    };
+    
     // 役職ごとの判定
     socket.on('judge',function(target){
+        
         for(var arr in player){
             if(target['action']=="投票" && player[arr]['vote'] == -1 && player[arr]['id'] == socket.id){
                 player[arr]['vote'] = target['target'];
-                voted();
+                if(checkVote()) voted();
             }
             if(target['action']=="噛む" && actions[role.wolf] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
                 actions[role.wolf]=target['target'];
@@ -396,6 +450,7 @@ io.on('connection', function (socket) {
                 actions[role.hunt]=target['target'];
             }
         }
+        
     });
 
     
