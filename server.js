@@ -84,6 +84,8 @@ function counter(){
 }
     */
     
+//   setTimeout('next()',120000)
+    
 }
 
 // シャッフル
@@ -128,6 +130,8 @@ function gamestart(shonichi) {
     } while(player[shonichi]['role'] == role.wolf)
 
     console.log(match[memcount]);
+    
+  //  counter();
 };
 
 // 時間の計算
@@ -212,6 +216,8 @@ function next(hit) {
         }
         
         io.emit('kaigi', { msg: "投票の結果"+player[hit]['name'] + "さんが吊られました。", userName: "GM" });
+        player[hit]['live'] = false;
+        player[hit]['death'] = turn;
         
         turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
