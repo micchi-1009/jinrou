@@ -20,6 +20,13 @@ var timer;
 var myTime;
 var phase=0;
 
+
+// インターバル変数
+var timeInterval;
+
+// ゲーム進行時間のカウント
+var countTime = 0;
+
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = { 
   1 : -1,  
@@ -63,30 +70,6 @@ var match = {
     21: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
-	
-// 実行され続ける部分
-function counter(){
-    
-    /*
-    var nowDate = new Date();
-	var nowTime = nowDate.getHours() * 3600 +  nowDate.getMinutes() * 60 + nowDate.getSeconds();
-    var diffTime = 180 + myTime - nowTime ;
-    console.log(diffTime);
-    if( diffTime <= 0){
-        console.log("ここにはこない");
-        var startDate = new Date();
-        myTime = startDate.getHours() * 3600 +  startDate.getMinutes() * 60 + startDate.getSeconds();
-        next();
-        phase++;
-    if(phase>2){
-        phase=0;
-    }
-}
-    */
-    
-//   setTimeout('next()',120000)
-    
-}
 
 // シャッフル
 function shuffle(array) {
@@ -105,13 +88,6 @@ function shuffle(array) {
 //　ゲームをスタートする
 function gamestart(shonichi) {
     turn = 1;
-
-    /*
-    var startDate = new Date();
-    myTime = startDate.getHours() * 3600 +  startDate.getMinutes() * 60 + startDate.getSeconds();
-    timer = setInterval(counter(), 10000);
-    */
-
     
     io.emit('turn', turn);
     
@@ -130,8 +106,7 @@ function gamestart(shonichi) {
     } while(player[shonichi]['role'] == role.wolf)
 
     console.log(match[memcount]);
-    
-  //  counter();
+
 };
 
 // 時間の計算
@@ -200,7 +175,7 @@ function next(hit) {
             io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
         }
         // 占い師の妖狐呪殺
-        if(player[actions[role.fort]]['role'] == role.inum){
+        if(actions[role.fort]!=-1&&(player[actions[role.fort]]['role'] == role.inum)){
             player[actions[role.fort]]['live'] = false;
             player[actions[role.fort]]['death'] = turn;
             
@@ -336,6 +311,21 @@ io.on('connection', function (socket) {
             sendflag = false;
             // プレイヤー情報を送る
             io.emit('player', {player:player,turn:turn});
+
+            // タイマー駆動型のイベントを定義
+            timeInterval = setInterval(function() {
+
+                countTime++;
+
+                if (countTime > 2*15) {
+                    countTime = 0;
+                    clearInterval(timeInterval);
+                    next();
+                }
+
+                console.log(countTime+"秒");
+
+            }, 1000);
         }
     
         // voteコマンド
