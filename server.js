@@ -146,6 +146,7 @@ function voted(){
     }
     
     if (seikou == true) {
+        clearInterval(timeInterval);
         next(hit);
     } else {
         // 再投票処理
@@ -194,14 +195,37 @@ function next(hit) {
         player[hit]['live'] = false;
         player[hit]['death'] = turn;
         
-        turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
+        
+        turn++;
     }
     // ターン情報を送る
     io.emit('turn', turn);
     
     // プレイヤー情報を送る
     io.emit('player', {player:player,turn:turn});
+    
+    if (winer() == true) {
+        // End
+    } else {
+        // continue
+        // タイマー駆動型のイベントを定義
+        timeInterval = setInterval(function () {
+
+            countTime++;
+            // (4分@デバッグ中)
+            if (countTime > 2 * 15) {
+                countTime = 0;
+                clearInterval(timeInterval);
+                voted();
+                next();
+            }
+
+            console.log(countTime + "秒");
+
+        }, 1000);
+    }
+
 };
 
 function winer(){
@@ -231,8 +255,10 @@ function winer(){
         }
         if(fox == 1){
             io.emit('kaigi', { msg: "よって、妖狐の勝利です。" , userName: "GM" });
+            return true;
         }else{
             io.emit('kaigi', { msg: "よって、人狼サイドの勝利です。" , userName: "GM" });
+            return true;
         }
     }else if(werewolf == 0){
         for(var arr in player){
@@ -245,10 +271,13 @@ function winer(){
         }
         if(fox == 1){
             io.emit('kaigi', { msg: "よって、妖狐の勝利です。" , userName: "GM" });
+            return true;
         }else{
             io.emit('kaigi', { msg: "よって、村人サイドの勝利です。" , userName: "GM" });
+            return true;
         }
     }
+    return false;
 };
 
 io.on('connection', function (socket) {
@@ -316,7 +345,7 @@ io.on('connection', function (socket) {
             timeInterval = setInterval(function() {
 
                 countTime++;
-
+                // 夜時間タイマー(2分@デバッグ中)
                 if (countTime > 2*15) {
                     countTime = 0;
                     clearInterval(timeInterval);
