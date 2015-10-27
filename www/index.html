@@ -237,7 +237,7 @@ $(document).ready(function(){
 		
 		// ボタンの表示変更
 		if(mynumber != -1 && data[mynumber]['live']==true){
-			if(data[mynumber]['role'] == role.wolfe && turn%2 == 1 ){
+			if(data[mynumber]['role'] == role.wolf && turn%2 == 1 ){
 				$('#judge').val("噛む");
 			} else if(data[mynumber]['role'] == role.fort && turn%2 == 1 ){
 				$('#judge').val("占う");

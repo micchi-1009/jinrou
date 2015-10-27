@@ -27,6 +27,19 @@ var timeInterval;
 // ゲーム進行時間のカウント
 var countTime = 0;
 
+
+
+setInterval(function () {
+    console.log("turn: "+ turn);
+
+    console.log("day: "+ Math.ceil(turn / 2));
+}, 1000);
+
+
+
+
+
+
 // 連想配列のキーに変数を使えないので実数を入力した
 var actions = { 
   1 : -1,  
@@ -147,6 +160,8 @@ function voted(){
     
     if (seikou == true) {
         clearInterval(timeInterval);
+        // (30秒に調整しておく@デバッグ中)
+        countTime = 0;
         next(hit);
     } else {
         // 再投票処理
@@ -157,12 +172,14 @@ function voted(){
 
         io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。", userName: "GM" });
         io.emit('player', { player: player, turn: turn });
+       // (30秒に調整しておく@デバッグ中)
+        countTime = 0;
     }
-
 }
 
+// 
 function next(hit) {
-
+clearInterval(timeInterval);
     if (turn % 2 == 1) {
         // 夜→昼
         turn++;
@@ -202,6 +219,8 @@ function next(hit) {
     // ターン情報を送る
     io.emit('turn', turn);
     
+    console.log(turn);//ターンテスト
+    
     // プレイヤー情報を送る
     io.emit('player', {player:player,turn:turn});
     
@@ -209,25 +228,42 @@ function next(hit) {
         // End
     } else {
         // continue
-        // タイマー駆動型のイベントを定義
-        timeInterval = setInterval(function () {
+        if (turn % 2 == 0) {
+            // タイマー駆動型のイベントを定義
+            timeInterval = setInterval(function () {
 
-            countTime++;
-            // (4分@デバッグ中)
-            if (countTime > 2 * 15) {
-                countTime = 0;
-                clearInterval(timeInterval);
-                voted();
-                next();
-            }
+                countTime++;
+                // 昼時間タイマー(4分@デバッグ中)
+                if (countTime > 2 * 15) {
+                    countTime = 0;
+                    clearInterval(timeInterval);
+                    voted();
+                    next();
+                }
 
-            console.log(countTime + "秒");
+                console.log("昼："+countTime + "秒");
 
-        }, 1000);
+            }, 1000);
+        } else {
+            timeInterval = setInterval(function () {
+
+                countTime++;
+                // 夜時間タイマー(2分@デバッグ中)
+                if (countTime > 2 * 15) {
+                    countTime = 0;
+                    clearInterval(timeInterval);
+                    next();
+                }
+
+                console.log("夜："+countTime + "秒");
+
+            }, 1000);
+        }
     }
 
 };
 
+// 勝敗判定
 function winer(){
     
     var werewolf=0;
