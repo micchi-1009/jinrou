@@ -92,6 +92,7 @@ function shuffle(array) {
 //　ゲームをスタートする
 function gamestart(shonichi) {
     turn = 1;
+    phase = 2;
     
     io.emit('turn', turn);
     
@@ -116,6 +117,8 @@ function gamestart(shonichi) {
         countTime++;
         roopPhase();
         console.log(countTime + "秒");
+        console.log(phase + "フェイズ");
+        console.log(actions);
     }, 1000);
 
 };
@@ -141,7 +144,6 @@ function roopPhase() {
                 // 投票の完了処理
                 voteEnd();
 
-                phase++;
                 countTime = 0;
             }
             break;
@@ -231,12 +233,20 @@ function voteStart() {
 // 投票の完了処理
 function voteEnd() {
     
+    // 時間を初期化する
+    countTime = 0;
+    
     // 投票で選ばれた人を探す
     var hit = hitVote();
-
+    
+    // 投票者の通知
+    for (var arr in player) {
+        if (player[arr]['live'] == true) {
+            io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"], userName: "GM" });
+        }
+    }
+    
     if (hit == -1) {
-        
-        countTime = 0;
         
         // 再投票メッセージの送信
         io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。", userName: "GM" });
@@ -248,13 +258,6 @@ function voteEnd() {
     } else {
         // 昼→夜
 
-        // 投票者の通知
-        for (var arr in player) {
-            if (player[arr]['live'] == true) {
-                io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"], userName: "GM" });
-            }
-        }
-
         // 吊られた人の通知
         io.emit('kaigi', { msg: "投票の結果" + player[hit]['name'] + "さんが吊られました。", userName: "GM" });
 
@@ -265,6 +268,16 @@ function voteEnd() {
         turn++;
         io.emit('kaigi', { msg: timing(), userName: "GM" });
 
+        // プレイヤー情報を送る
+        io.emit('player', { player: player, turn: turn });
+            
+        if (winer() == true) {
+            // End
+        } else {
+            // continue
+        }
+        
+        phase++;
     }
 
 }
@@ -274,6 +287,8 @@ function nightEnd() {
 
     // 夜→昼
     turn++;
+    
+    // 日時変更を通知する
     io.emit('kaigi', { msg: timing(), userName: "GM" });
         
     // 人狼の噛み判定
@@ -294,9 +309,6 @@ function nightEnd() {
 
     // 役職達の指定先初期化
     actions = actionInit();
-
-    // ターン情報を送る
-    io.emit('turn', turn);
     
     // プレイヤー情報を送る
     io.emit('player', { player: player, turn: turn });
@@ -537,8 +549,12 @@ io.on('connection', function (socket) {
                 player[arr]['vote'] = target['target'];
                 // 全員の投票が終了しているかを確認
                 if(checkVote()) {
+                    // 投票時間に遷移する
+                    phase = 1;
+                        
                     // 投票の完了処理
                     voteEnd();
+                    
                 }
             }
             if(target['action']=="噛む" && actions[role.wolf] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
