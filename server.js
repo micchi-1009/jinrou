@@ -13,8 +13,7 @@ app.use(express.static('www'));
 server.listen(process.env.PORT || 3000);
 
 
-/* 役職達の指定先の初期化
- */
+// 役職達の指定先の初期化
 function actionInit() {
     return {
         1: -1,
@@ -229,7 +228,6 @@ function voteStart() {
 
 }
 
-
 // 投票の完了処理
 function voteEnd() {
     
@@ -362,8 +360,6 @@ function winer(){
     }
     return false;
 };
-
-
 
 io.on('connection', function (socket) {
 
@@ -563,9 +559,6 @@ io.on('connection', function (socket) {
         
     });
 
-    
-    
-
     // GMログインメッセージ
     socket.on('userName', function (msg) {
         player.push({ id: socket.id, name: msg, role: role.none, live: true, death: 0, vote: -1, voted: 0 });
@@ -575,29 +568,4 @@ io.on('connection', function (socket) {
         io.emit('player', {player:player,turn:turn});
     });
 
-	/*
-    
-     io.emit('chat message', people[socket.id] + ' : ' + msg);
-    // show user name
-    socket.on('show username', function(username){
-        // set username into people
-        people[socket.id] = username;
-        // add all username in userlist
-        var userlist = [];
-        for(key in people){
-            userlist.push(people[key]);
-            console.log(userlist);
-        }
-        // send username to client
-        io.emit('show username', username); // show username in form header
-        io.emit('show userlist', userlist); // show userlist in main
-    });
-    // disconnect socket
-    socket.on('disconnect', function(){
-        console.log(people[socket.id] + ' has disconnected');
-        // remove nickname from people list
-        delete people[socket.id];
-    });
-	
-*/
 });
