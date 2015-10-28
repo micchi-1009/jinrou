@@ -44,6 +44,19 @@ var role = {
     inum: 7
 };
 
+// roleの変換
+var exchange = {
+	'-1': '無し',
+	'0': '村人',
+	'1': '人狼',
+	'2': '占い師',
+	'3': '霊能者',
+	'4': '狂人',
+	'5': '狩人',
+	'6': '共有者',
+	'7': '妖狐',	
+};
+
 var match = {
     2: [0, 1],
     3: [0, 1, 2],
@@ -118,7 +131,6 @@ function gamestart(shonichi) {
         roopPhase();
         console.log(countTime + "秒");
         console.log(phase + "フェイズ");
-        console.log(actions);
     }, 1000);
 
 };
@@ -141,6 +153,14 @@ function roopPhase() {
             if (countTime > 30) {
                 // ToDo：足りない（投票してない）ユーザを殺す処理
                 
+                for (var arr in player) {
+                    if (player[arr]['vote'] == -1 && player[arr]['live'] == true) {
+                        player[arr]['live'] = false;
+                        player[arr]['death'] = turn;
+                        io.emit('kaigi', { msg: player[arr]['name'] + "さんは不思議な力により死亡しました。", userName: "GM" });
+                    }
+                }
+                
                 // 投票の完了処理
                 voteEnd();
 
@@ -152,6 +172,13 @@ function roopPhase() {
             // デバッグ中＠2分（60*2）
             if (countTime > 30) {
                 // ToDo: 人狼が噛んでない場合。人狼を消し去る処理
+                for (var arr in player) {
+                    if (actions[role.wolf] == -1 && player[arr]['role'] == role.wolf && player[arr]['live'] == true) {
+                        player[arr]['live'] = false;
+                        player[arr]['death'] = turn;
+                        io.emit('kaigi', { msg: player[arr]['name'] + "さんは不思議な力により死亡しました。", userName: "GM" });
+                    }
+                }
 
                 nightEnd();
                 phase = 0;
@@ -225,8 +252,9 @@ function voteStart() {
     }
     
     // ToDo：昼会議終了の告知
+    io.emit('kaigi', { msg: "昼時間が終了しました。投票を開始してください。", userName: "GM" });
     
-    // 会議を禁止する処理
+    // ToDo: 会議を禁止する処理
 
 }
 
@@ -340,7 +368,7 @@ function winer(){
     if(werewolf >= villager){
         for(var arr in player){
             if(player[arr]['live'] == true){
-                io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
+                io.emit('kaigi', { msg: player[arr]['name'] + ":" + exchange[player[arr]['role']] , userName: "GM" });
                 if(player[arr]['role'] == role.inum){
                     fox=1;
                 }
@@ -356,7 +384,7 @@ function winer(){
     }else if(werewolf == 0){
         for(var arr in player){
             if(player[arr]['live'] == true){
-                io.emit('kaigi', { msg: player[arr]['name'] + ":" + player[arr]['role'] , userName: "GM" });
+                io.emit('kaigi', { msg: player[arr]['name'] + ":" + exchange[player[arr]['role']] , userName: "GM" });
                 if(player[arr]['role'] == role.inum){
                     fox=1;
                 }
@@ -415,7 +443,7 @@ io.on('connection', function (socket) {
                 
             case "/nextturn":
                 // ToDo：実行中のフェイズに従って呼び出す処理を分岐
-                // フェイズとカウントを初期化すること
+                // ToDo: フェイズとカウントを初期化すること
                 switch (phase) {
                     case 0: // 昼ターン中
 
