@@ -151,7 +151,7 @@ function roopPhase() {
         case 1: // 投票
             // デバッグ中＠2分（60*2）
             if (countTime > 30) {
-                // ToDo：足りない（投票してない）ユーザを殺す処理
+                // 足りない（投票してない）ユーザを殺す処理
                 
                 for (var arr in player) {
                     if (player[arr]['vote'] == -1 && player[arr]['live'] == true) {
@@ -171,7 +171,7 @@ function roopPhase() {
         case 2: // 夜
             // デバッグ中＠2分（60*2）
             if (countTime > 30) {
-                // ToDo: 人狼が噛んでない場合。人狼を消し去る処理
+                // 人狼が噛んでない場合。人狼を消し去る処理
                 for (var arr in player) {
                     if (actions[role.wolf] == -1 && player[arr]['role'] == role.wolf && player[arr]['live'] == true) {
                         player[arr]['live'] = false;
@@ -251,7 +251,7 @@ function voteStart() {
         player[arr]['voted'] = 0;
     }
     
-    // ToDo：昼会議終了の告知
+    // 昼会議終了の告知
     io.emit('kaigi', { msg: "昼時間が終了しました。投票を開始してください。", userName: "GM" });
     
     // ToDo: 会議を禁止する処理
@@ -556,7 +556,8 @@ io.on('connection', function (socket) {
         }
         
         // チャット送信
-        if ( sendflag ) {             
+        // phaseが1(投票)の時はチャットを流れないようにする
+        if ( sendflag && phase != 1 ) {             
             io.emit('kaigi', { msg: msg, userName: userName, turn: turn });
         }
     });
