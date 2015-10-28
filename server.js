@@ -12,27 +12,25 @@ app.use(express.static('www'));
 // サーバを開始
 server.listen(process.env.PORT || 3000);
 
+/* 役職達の指定先の初期化
+ */
+function actionInit() {
+    return {
+        1: -1,
+        2: -1,
+        5: -1
+    };
+}
 
 var player = new Array();
 var turn = 0;
 
 var timer;
 var myTime;
-var phase=0;
-
-
-// インターバル変数
-var timeInterval;
-
-// ゲーム進行時間のカウント
-var countTime = 0;
+var phase=0; // 0:昼 1:投票 2:夜
 
 // 連想配列のキーに変数を使えないので実数を入力した
-var actions = { 
-  1 : -1,  
-  2 : -1,
-  5 : -1  
-};
+var actions = actionInit();
 
 var role = {
     none: -1,
@@ -70,6 +68,7 @@ var match = {
     21: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7],
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
+
 
 // シャッフル
 function shuffle(array) {
@@ -109,6 +108,36 @@ function gamestart(shonichi) {
 
 };
 
+function roopPhase(){
+    
+    switch (phase) {
+        
+        // 0:昼 1:投票 2:夜
+        
+        case 0:
+
+            next();
+            phase++;
+
+            break;
+
+        case 1:
+
+            voted();
+            phase++;
+
+            break;
+
+        case 2:
+
+            next();
+            phase++;
+
+            break;
+    }
+        
+}
+
 // 時間の計算
 function timing() {
     var day = Math.ceil(turn / 2);
@@ -146,7 +175,6 @@ function voted(){
     }
     
     if (seikou == true) {
-        clearInterval(timeInterval);
         next(hit);
     } else {
         // 再投票処理
@@ -183,6 +211,8 @@ function next(hit) {
             io.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
         }
 
+        actions = actionInit();
+
     } else {
         // 昼→夜
         for(var arr in player){
@@ -209,21 +239,7 @@ function next(hit) {
         // End
     } else {
         // continue
-        // タイマー駆動型のイベントを定義
-        timeInterval = setInterval(function () {
-
-            countTime++;
-            // (4分@デバッグ中)
-            if (countTime > 2 * 15) {
-                countTime = 0;
-                clearInterval(timeInterval);
-                voted();
-                next();
-            }
-
-            console.log(countTime + "秒");
-
-        }, 1000);
+        
     }
 
 };
@@ -280,6 +296,8 @@ function winer(){
     return false;
 };
 
+
+
 io.on('connection', function (socket) {
 
     var userName;
@@ -300,7 +318,6 @@ io.on('connection', function (socket) {
 
             case "/stop":
                 turn = 0;
-                clearInterval(timer);
                 
                 for (var arr in player) {
                     player[arr]['role'] = role.none;
@@ -340,21 +357,6 @@ io.on('connection', function (socket) {
             sendflag = false;
             // プレイヤー情報を送る
             io.emit('player', {player:player,turn:turn});
-
-            // タイマー駆動型のイベントを定義
-            timeInterval = setInterval(function() {
-
-                countTime++;
-                // 夜時間タイマー(2分@デバッグ中)
-                if (countTime > 2*15) {
-                    countTime = 0;
-                    clearInterval(timeInterval);
-                    next();
-                }
-
-                console.log(countTime+"秒");
-
-            }, 1000);
         }
     
         // voteコマンド
