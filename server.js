@@ -12,6 +12,7 @@ app.use(express.static('www'));
 // サーバを開始
 server.listen(process.env.PORT || 3000);
 
+
 /* 役職達の指定先の初期化
  */
 function actionInit() {
@@ -69,6 +70,11 @@ var match = {
     22: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 7]
 };
 
+// インターバル変数
+var timeInterval;
+
+// 時間カウント用
+var countTime = 0;
 
 // シャッフル
 function shuffle(array) {
@@ -106,36 +112,53 @@ function gamestart(shonichi) {
 
     console.log(match[memcount]);
 
+    // タイマー駆動型のイベントを定義
+    timeInterval = setInterval(function () {
+        countTime++;
+        roopPhase();
+        console.log(countTime + "秒");
+    }, 1000);
+
 };
 
-function roopPhase(){
-    
+function roopPhase() {
     switch (phase) {
-        
-        // 0:昼 1:投票 2:夜
-        
-        case 0:
+        case 0: // 昼ターン中
+            // デバッグ中＠4分（60*4）
+            if (countTime > 30) {
+                // 昼ターンの終了処理
+                voteStart();
 
-            next();
-            phase++;
-
+                countTime = 0;
+                phase++;
+            }
             break;
 
-        case 1:
+        case 1: // 投票
+            // デバッグ中＠2分（60*2）
+            if (countTime > 30) {
+                // ToDo：足りない（投票してない）ユーザを殺す処理
+                
+                // 投票の完了処理
+                voteEnd();
 
-            voted();
-            phase++;
-
+                phase++;
+                countTime = 0;
+            }
             break;
 
-        case 2:
+        case 2: // 夜
+            // デバッグ中＠2分（60*2）
+            if (countTime > 30) {
+                // ToDo: 人狼が噛んでない場合。人狼を消し去る処理
 
-            next();
-            phase++;
-
+                nightEnd();
+                phase = 0;
+                countTime = 0;
+            }
             break;
-    }
-        
+
+    }        
 }
 
 // 時間の計算
@@ -151,19 +174,28 @@ function timing() {
 
     return day + "日目 " + time;
 }
-// 投票の処理
-function voted(){
+
+// 投票で選ばれた人の番号を求める
+// 成功したとき：0以上の値
+// 失敗したとき：-1
+function hitVote() {
     var seikou;
     var max=0;
     var hit;
+    
+    // 被投票数を調べる為の変数を初期化
     for(var arr in player){
         player[arr]['voted']=0;
     }
+
+    // 被投票数を調べる処理
     for(var arr in player){
         if(player[arr]['vote']!=-1){
             player[player[arr]['vote']]['voted']++;
         }
     }
+    
+    // 最大投票の調査と重複の確認
     for(var arr in player){
         if(player[arr]['voted']>max){
             max=player[arr]['voted'];
@@ -174,72 +206,107 @@ function voted(){
         }
     }
     
-    if (seikou == true) {
-        next(hit);
+    if (seikou) {
+        return hit;
     } else {
-        // 再投票処理
-        for (var arr in player) {
-            player[arr]['vote'] = -1;
-            player[arr]['voted'] = 0;
-        }
-
-        io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。", userName: "GM" });
-        io.emit('player', { player: player, turn: turn });
+        return -1;
     }
 
 }
 
-function next(hit) {
+// 投票の開始処理
+function voteStart() {
 
-    if (turn % 2 == 1) {
-        // 夜→昼
-        turn++;
-        io.emit('kaigi', { msg: timing(), userName: "GM" });
+    // 投票の為に初期化処理
+    for (var arr in player) {
+        player[arr]['vote'] = -1;
+        player[arr]['voted'] = 0;
+    }
+    
+    // ToDo：昼会議終了の告知
+    
+    // 会議を禁止する処理
+
+}
+
+
+// 投票の完了処理
+function voteEnd() {
+    
+    // 投票で選ばれた人を探す
+    var hit = hitVote();
+
+    if (hit == -1) {
         
-        // 人狼の噛み判定
-        if (actions[role.wolf] != actions[role.hunt]) {
-            player[actions[role.wolf]]['live'] = false;
-            player[actions[role.wolf]]['death'] = turn;
-            
-            io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
-        }
-        // 占い師の妖狐呪殺
-        if(actions[role.fort]!=-1&&(player[actions[role.fort]]['role'] == role.inum)){
-            player[actions[role.fort]]['live'] = false;
-            player[actions[role.fort]]['death'] = turn;
-            
-            io.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
-        }
+        countTime = 0;
+        
+        // 再投票メッセージの送信
+        io.emit('kaigi', { msg: "再投票になりました。もう一度投票してください。", userName: "GM" });
+        io.emit('player', { player: player, turn: turn });
 
-        actions = actionInit();
+        // 投票の開始処理      
+        voteStart();
 
     } else {
         // 昼→夜
-        for(var arr in player){
-            if(player[arr]['live'] == true){
-                io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"] , userName: "GM" });   
+
+        // 投票者の通知
+        for (var arr in player) {
+            if (player[arr]['live'] == true) {
+                io.emit('kaigi', { msg: player[arr]['name'] + "→" + player[player[arr]['vote']]["name"], userName: "GM" });
             }
         }
-        
-        io.emit('kaigi', { msg: "投票の結果"+player[hit]['name'] + "さんが吊られました。", userName: "GM" });
+
+        // 吊られた人の通知
+        io.emit('kaigi', { msg: "投票の結果" + player[hit]['name'] + "さんが吊られました。", userName: "GM" });
+
+        // 吊られた人のステイタスを変更
         player[hit]['live'] = false;
         player[hit]['death'] = turn;
-        
-        io.emit('kaigi', { msg: timing(), userName: "GM" });
-        
+
         turn++;
+        io.emit('kaigi', { msg: timing(), userName: "GM" });
+
     }
+
+}
+
+// 夜ターン終了後の判定
+function nightEnd() {
+
+    // 夜→昼
+    turn++;
+    io.emit('kaigi', { msg: timing(), userName: "GM" });
+        
+    // 人狼の噛み判定
+    if (actions[role.wolf] != actions[role.hunt]) {
+        player[actions[role.wolf]]['live'] = false;
+        player[actions[role.wolf]]['death'] = turn;
+
+        io.emit('kaigi', { msg: player[actions[role.wolf]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
+    }
+
+    // 占い師の妖狐呪殺
+    if (actions[role.fort] != -1 && (player[actions[role.fort]]['role'] == role.inum)) {
+        player[actions[role.fort]]['live'] = false;
+        player[actions[role.fort]]['death'] = turn;
+
+        io.emit('kaigi', { msg: player[actions[role.fort]]['name'] + "さんが無残な死体で発見されました。", userName: "GM" });
+    }
+
+    // 役職達の指定先初期化
+    actions = actionInit();
+
     // ターン情報を送る
     io.emit('turn', turn);
     
     // プレイヤー情報を送る
-    io.emit('player', {player:player,turn:turn});
-    
+    io.emit('player', { player: player, turn: turn });
+
     if (winer() == true) {
         // End
     } else {
         // continue
-        
     }
 
 };
@@ -339,7 +406,19 @@ io.on('connection', function (socket) {
                 break; 
                 
             case "/nextturn":
-                next();
+                // ToDo：実行中のフェイズに従って呼び出す処理を分岐
+                // フェイズとカウントを初期化すること
+                switch (phase) {
+                    case 0: // 昼ターン中
+
+                        break;
+                    case 1: // 投票中
+
+                        break;
+                    case 2: // 夜ターン中
+
+                        break;
+                }
                 sendflag = false;
         }
         var result;
@@ -460,7 +539,11 @@ io.on('connection', function (socket) {
         for(var arr in player){
             if(target['action']=="投票" && player[arr]['vote'] == -1 && player[arr]['id'] == socket.id){
                 player[arr]['vote'] = target['target'];
-                if(checkVote()) voted();
+                // 全員の投票が終了しているかを確認
+                if(checkVote()) {
+                    // 投票の完了処理
+                    voteEnd();
+                }
             }
             if(target['action']=="噛む" && actions[role.wolf] == -1 && player[arr]['id'] == socket.id && player[arr]['role'] == role.wolf){
                 actions[role.wolf]=target['target'];
