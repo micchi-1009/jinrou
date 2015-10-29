@@ -172,6 +172,8 @@ $(document).ready(function(){
 
 	// サーバーから送られてきたチャット内容の処理
  	socket.on('kaigi', function(data){
+		 
+	//ToDo if(data.fhase == 2 && (data.role == wolf || data.role == shar)で見えるように
 		 data.msg = data.msg.replace( /\n/g , "<br>" );
 		 data.msg = data.msg.replace( / /g , "&nbsp;" );
 

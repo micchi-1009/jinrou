@@ -557,8 +557,8 @@ io.on('connection', function (socket) {
         
         // チャット送信
         // phaseが1(投票)の時はチャットを流れないようにする
-        if ( sendflag && phase != 1 ) {             
-            io.emit('kaigi', { msg: msg, userName: userName, turn: turn });
+        if ( sendflag && phase != 1){             
+            io.emit('kaigi', { msg: msg, userName: userName, turn: turn, phase: phase });
         }
     });
     
