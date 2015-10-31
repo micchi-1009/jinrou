@@ -206,9 +206,9 @@ $(document).ready(function(){
 		$('#player table').empty();
 		for (var arr in data){
 			if (data[arr]['live'] == true){
-				$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]));
+				$('#player table').append($('<tr>').append( '<td><input class="point" type="radio" name="q2" value="'+arr+'"><td>'+data[arr]['name']));
 			}else{
-				$('#player table').append($('<tr>').append( '<td><td>'+arr+ '<td>'+data[arr]['name']+ '<td>'+data[arr]['live']+ '<td>'+data[arr]['vote']+ '<td>'+ '<td>'+exchange[data[arr]['role']]+ '<td>'+ '<td>'+data[arr]['death']));
+				$('#player table').append($('<tr>').append( '<td><td>'+data[arr]['name']));
 			}
 			 
 			if ( socket.id == data[arr]['id'] ) {
