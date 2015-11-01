@@ -139,7 +139,7 @@ function roopPhase() {
     switch (phase) {
         case 0: // 昼ターン中
             // デバッグ中＠4分（60*4）
-            if (countTime > 30) {
+            if (countTime > 60*4) {
                 // 昼ターンの終了処理
                 voteStart();
 
@@ -150,7 +150,7 @@ function roopPhase() {
 
         case 1: // 投票
             // デバッグ中＠2分（60*2）
-            if (countTime > 30) {
+            if (countTime > 60*2) {
                 // 足りない（投票してない）ユーザを殺す処理
                 
                 for (var arr in player) {
@@ -170,7 +170,7 @@ function roopPhase() {
 
         case 2: // 夜
             // デバッグ中＠2分（60*2）
-            if (countTime > 30) {
+            if (countTime > 60*2) {
                 // 人狼が噛んでない場合。人狼を消し去る処理
                 for (var arr in player) {
                     if (actions[role.wolf] == -1 && player[arr]['role'] == role.wolf && player[arr]['live'] == true) {
@@ -546,6 +546,23 @@ io.on('connection', function (socket) {
             }
             
             sendflag = false;
+        }
+        
+        // kick allコマンド
+        result = msg.match(/\/kick (\w+)/);
+        if (result) {
+            switch (result[1]) {
+                case "all":
+                    for (var arr in player){
+                        io.emit('kaigi', { msg: player[arr]['name'] + "さんがkickされました。", userName: "GM" });
+
+                        player.splice(arr, 1);
+                    }
+                    sendflag = false;
+                    // プレイヤー情報を送る
+                    io.emit('player', { player: player, turn: turn });
+                    break;
+            }
         }
        
         // 名前の登録
